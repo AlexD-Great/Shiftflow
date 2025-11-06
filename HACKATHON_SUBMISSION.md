@@ -9,9 +9,9 @@
 
 ## Team
 
-[Your Name/Team Name]  
-[GitHub Profile]  
-[Twitter/X Handle]
+**AlexD-Great**  
+GitHub: https://github.com/AlexD-Great  
+Repository: https://github.com/AlexD-Great/Shiftflow
 
 ## Project Description
 
@@ -259,16 +259,17 @@ client.startMonitoring();
 
 ## Links
 
-- **GitHub**: [Repository URL]
-- **Demo Video**: [YouTube/Loom URL]
-- **Live Demo**: [Deployed URL]
-- **Documentation**: [Docs URL]
+- **GitHub**: https://github.com/AlexD-Great/Shiftflow
+- **Demo Video**: [Coming soon - YouTube/Loom URL]
+- **Live Demo**: [Coming soon - Deployed URL]
+- **Documentation**: https://github.com/AlexD-Great/Shiftflow#readme
 
 ## Contact
 
-- **Email**: [your-email]
-- **Twitter**: [@your-handle]
-- **Discord**: [your-discord]
+- **GitHub**: @AlexD-Great
+- **Repository**: https://github.com/AlexD-Great/Shiftflow
+- **Email**: [Add your email]
+- **Twitter**: [Add your Twitter handle]
 
 ---
 
