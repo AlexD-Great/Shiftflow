@@ -117,6 +117,20 @@ export class WorkflowEngine {
       case ConditionType.PRICE_THRESHOLD:
         return this.evaluatePriceThreshold(condition);
       
+      case ConditionType.TIME_BASED:
+        return this.evaluateTimeBased(condition);
+      
+      case ConditionType.COMPOSITE_AND:
+        return this.evaluateCompositeAnd(condition);
+      
+      case ConditionType.COMPOSITE_OR:
+        return this.evaluateCompositeOr(condition);
+      
+      case ConditionType.BALANCE_THRESHOLD:
+      case ConditionType.GAS_THRESHOLD:
+        console.warn(`[WorkflowEngine] Condition type not yet implemented: ${condition.type}`);
+        return false;
+      
       default:
         console.warn(`[WorkflowEngine] Unknown condition type: ${condition.type}`);
         return false;
@@ -191,6 +205,18 @@ export class WorkflowEngine {
     switch (action.type) {
       case ActionType.CROSS_CHAIN_SWAP:
         await this.executeCrossChainSwap(action, execution);
+        break;
+      
+      case ActionType.MULTI_STEP:
+        await this.executeMultiStep(action, execution);
+        break;
+      
+      case ActionType.NOTIFICATION:
+        await this.executeNotification(action, execution);
+        break;
+      
+      case ActionType.WEBHOOK:
+        await this.executeWebhook(action, execution);
         break;
       
       default:
@@ -304,6 +330,169 @@ export class WorkflowEngine {
     return Array.from(this.executions.values()).filter(
       e => e.workflowId === workflowId
     );
+  }
+
+  /**
+   * Execute multi-step action
+   * Executes multiple actions in sequence
+   */
+  private async executeMultiStep(
+    action: import('../types').MultiStepAction,
+    execution: WorkflowExecution
+  ): Promise<void> {
+    console.log(`[WorkflowEngine] Executing multi-step action with ${action.steps.length} steps`);
+    
+    for (let i = 0; i < action.steps.length; i++) {
+      const step = action.steps[i];
+      
+      try {
+        console.log(`[WorkflowEngine] Executing step ${i + 1}/${action.steps.length}`);
+        await this.executeAction(step, execution);
+      } catch (error) {
+        console.error(`[WorkflowEngine] Step ${i + 1} failed:`, error);
+        
+        if (action.stopOnError) {
+          throw error;
+        }
+        // Continue to next step if stopOnError is false
+      }
+    }
+    
+    console.log(`[WorkflowEngine] Multi-step action completed`);
+  }
+
+  /**
+   * Execute notification action
+   */
+  private async executeNotification(
+    action: import('../types').NotificationAction,
+    execution: WorkflowExecution
+  ): Promise<void> {
+    const notificationStep: ExecutionStep = {
+      id: `step_${Date.now()}_notification`,
+      type: 'quote_request', // Reusing type, should add 'notification' type
+      status: 'executing',
+      timestamp: new Date(),
+    };
+    execution.steps.push(notificationStep);
+
+    console.log(
+      `[WorkflowEngine] Sending ${action.channel} notification to ${action.recipient}:\n` +
+      `  Message: ${action.message}`
+    );
+
+    // In production, integrate with actual notification services
+    // For now, just log it
+    notificationStep.status = 'completed';
+    notificationStep.data = {
+      channel: action.channel,
+      recipient: action.recipient,
+      message: action.message,
+      sentAt: new Date(),
+    };
+  }
+
+  /**
+   * Execute webhook action
+   */
+  private async executeWebhook(
+    action: import('../types').WebhookAction,
+    execution: WorkflowExecution
+  ): Promise<void> {
+    const webhookStep: ExecutionStep = {
+      id: `step_${Date.now()}_webhook`,
+      type: 'quote_request', // Reusing type, should add 'webhook' type
+      status: 'executing',
+      timestamp: new Date(),
+    };
+    execution.steps.push(webhookStep);
+
+    console.log(`[WorkflowEngine] Calling webhook: ${action.method} ${action.url}`);
+
+    // In production, make actual HTTP request
+    // For now, just log it
+    webhookStep.status = 'completed';
+    webhookStep.data = {
+      url: action.url,
+      method: action.method,
+      calledAt: new Date(),
+    };
+  }
+
+  /**
+   * Evaluate time-based condition
+   */
+  private async evaluateTimeBased(
+    condition: import('../types').TimeBasedCondition
+  ): Promise<boolean> {
+    const now = new Date();
+    
+    switch (condition.schedule) {
+      case 'daily':
+        if (condition.time) {
+          const [hours, minutes] = condition.time.split(':').map(Number);
+          return now.getHours() === hours && now.getMinutes() === minutes;
+        }
+        return true;
+      
+      case 'weekly':
+        if (condition.dayOfWeek !== undefined) {
+          return now.getDay() === condition.dayOfWeek;
+        }
+        return false;
+      
+      case 'monthly':
+        if (condition.dayOfMonth !== undefined) {
+          return now.getDate() === condition.dayOfMonth;
+        }
+        return false;
+      
+      default:
+        console.warn(`[WorkflowEngine] Unsupported schedule type: ${condition.schedule}`);
+        return false;
+    }
+  }
+
+  /**
+   * Evaluate composite AND condition
+   * All sub-conditions must be true
+   */
+  private async evaluateCompositeAnd(
+    condition: import('../types').CompositeAndCondition
+  ): Promise<boolean> {
+    console.log(`[WorkflowEngine] Evaluating AND condition with ${condition.conditions.length} sub-conditions`);
+    
+    for (const subCondition of condition.conditions) {
+      const result = await this.evaluateCondition(subCondition);
+      if (!result) {
+        console.log(`[WorkflowEngine] AND condition failed: sub-condition not met`);
+        return false;
+      }
+    }
+    
+    console.log(`[WorkflowEngine] AND condition met: all sub-conditions satisfied`);
+    return true;
+  }
+
+  /**
+   * Evaluate composite OR condition
+   * At least one sub-condition must be true
+   */
+  private async evaluateCompositeOr(
+    condition: import('../types').CompositeOrCondition
+  ): Promise<boolean> {
+    console.log(`[WorkflowEngine] Evaluating OR condition with ${condition.conditions.length} sub-conditions`);
+    
+    for (const subCondition of condition.conditions) {
+      const result = await this.evaluateCondition(subCondition);
+      if (result) {
+        console.log(`[WorkflowEngine] OR condition met: at least one sub-condition satisfied`);
+        return true;
+      }
+    }
+    
+    console.log(`[WorkflowEngine] OR condition failed: no sub-conditions met`);
+    return false;
   }
 
   /**

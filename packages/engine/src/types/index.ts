@@ -70,15 +70,18 @@ export type ShiftResponse = z.infer<typeof ShiftResponseSchema>;
 
 export enum ConditionType {
   PRICE_THRESHOLD = 'PRICE_THRESHOLD',
-  LIQUIDITY_POOL = 'LIQUIDITY_POOL',
   TIME_BASED = 'TIME_BASED',
-  AI_SIGNAL = 'AI_SIGNAL',
+  BALANCE_THRESHOLD = 'BALANCE_THRESHOLD',
+  GAS_THRESHOLD = 'GAS_THRESHOLD',
+  COMPOSITE_AND = 'COMPOSITE_AND',
+  COMPOSITE_OR = 'COMPOSITE_OR',
 }
 
 export enum ActionType {
   CROSS_CHAIN_SWAP = 'CROSS_CHAIN_SWAP',
-  LIQUIDITY_DEPOSIT = 'LIQUIDITY_DEPOSIT',
-  TOKEN_TRANSFER = 'TOKEN_TRANSFER',
+  NOTIFICATION = 'NOTIFICATION',
+  WEBHOOK = 'WEBHOOK',
+  MULTI_STEP = 'MULTI_STEP',
 }
 
 export interface PriceThresholdCondition {
@@ -87,6 +90,40 @@ export interface PriceThresholdCondition {
   comparison: 'above' | 'below';
   threshold: number;
   currency: string; // e.g., 'USD'
+}
+
+export interface TimeBasedCondition {
+  type: ConditionType.TIME_BASED;
+  schedule: 'daily' | 'weekly' | 'monthly' | 'cron';
+  time?: string; // e.g., '09:00' or cron expression
+  dayOfWeek?: number; // 0-6 for weekly
+  dayOfMonth?: number; // 1-31 for monthly
+}
+
+export interface BalanceThresholdCondition {
+  type: ConditionType.BALANCE_THRESHOLD;
+  address: string;
+  token: string;
+  network: string;
+  comparison: 'above' | 'below';
+  threshold: string;
+}
+
+export interface GasThresholdCondition {
+  type: ConditionType.GAS_THRESHOLD;
+  network: string;
+  comparison: 'above' | 'below';
+  threshold: number; // in gwei
+}
+
+export interface CompositeAndCondition {
+  type: ConditionType.COMPOSITE_AND;
+  conditions: WorkflowCondition[];
+}
+
+export interface CompositeOrCondition {
+  type: ConditionType.COMPOSITE_OR;
+  conditions: WorkflowCondition[];
 }
 
 export interface CrossChainSwapAction {
@@ -99,8 +136,40 @@ export interface CrossChainSwapAction {
   settleAddress: string;
 }
 
-export type WorkflowCondition = PriceThresholdCondition;
-export type WorkflowAction = CrossChainSwapAction;
+export interface NotificationAction {
+  type: ActionType.NOTIFICATION;
+  channel: 'email' | 'telegram' | 'discord';
+  recipient: string;
+  message: string;
+}
+
+export interface WebhookAction {
+  type: ActionType.WEBHOOK;
+  url: string;
+  method: 'GET' | 'POST';
+  headers?: Record<string, string>;
+  body?: any;
+}
+
+export interface MultiStepAction {
+  type: ActionType.MULTI_STEP;
+  steps: WorkflowAction[];
+  stopOnError?: boolean;
+}
+
+export type WorkflowCondition = 
+  | PriceThresholdCondition 
+  | TimeBasedCondition
+  | BalanceThresholdCondition
+  | GasThresholdCondition
+  | CompositeAndCondition 
+  | CompositeOrCondition;
+
+export type WorkflowAction = 
+  | CrossChainSwapAction 
+  | NotificationAction
+  | WebhookAction
+  | MultiStepAction;
 
 export interface Workflow {
   id: string;
