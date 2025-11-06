@@ -8,13 +8,15 @@ The landing page is ready to deploy to Vercel.
 
 1. Go to https://vercel.com/new
 2. Import your GitHub repository: `AlexD-Great/Shiftflow`
-3. Configure project:
+3. **IMPORTANT**: Configure project settings:
    - **Framework Preset**: Next.js
-   - **Root Directory**: `packages/web`
-   - **Build Command**: `npm run build`
-   - **Output Directory**: `.next`
-   - **Install Command**: `npm install`
+   - **Root Directory**: `packages/web` ← Click "Edit" and set this!
+   - **Build Command**: Leave default (`npm run build`)
+   - **Output Directory**: Leave default (`.next`)
+   - **Install Command**: Leave default (`npm install`)
 4. Click "Deploy"
+
+**Note**: If you already deployed and it failed, go to Project Settings → General → Root Directory and set it to `packages/web`, then redeploy.
 
 That's it! Vercel will give you a live URL like `shiftflow.vercel.app`
 
