@@ -114,6 +114,9 @@ export interface Workflow {
   updatedAt: Date;
   lastCheckedAt?: Date;
   executionCount: number;
+  // Smart Account integration
+  safeAddress?: string; // If set, execute through Safe multi-sig
+  requiresApproval?: boolean; // If true, needs multi-sig approval
 }
 
 export interface WorkflowExecution {

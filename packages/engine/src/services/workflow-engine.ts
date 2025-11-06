@@ -9,10 +9,12 @@ import {
 } from '../types';
 import { SideShiftService } from './sideshift';
 import { PriceOracleService } from './price-oracle';
+import { SmartAccountService, SmartAccountConfig } from './smart-account';
 
 export class WorkflowEngine {
   private sideshift: SideShiftService;
   private priceOracle: PriceOracleService;
+  private smartAccounts: Map<string, SmartAccountService> = new Map();
   private workflows: Map<string, Workflow> = new Map();
   private executions: Map<string, WorkflowExecution> = new Map();
   private monitoringInterval?: NodeJS.Timeout;
@@ -24,6 +26,15 @@ export class WorkflowEngine {
   ) {
     this.sideshift = new SideShiftService(sideshiftSecret, sideshiftAffiliateId);
     this.priceOracle = new PriceOracleService(coingeckoApiKey);
+  }
+
+  /**
+   * Register a Smart Account (Safe) for workflow execution
+   */
+  registerSmartAccount(config: SmartAccountConfig): void {
+    const smartAccount = new SmartAccountService(config);
+    this.smartAccounts.set(config.safeAddress, smartAccount);
+    console.log(`[WorkflowEngine] Registered Smart Account: ${config.safeAddress}`);
   }
 
   /**
@@ -189,11 +200,20 @@ export class WorkflowEngine {
 
   /**
    * Execute cross-chain swap action
+   * Supports both direct execution and Smart Account (Safe) execution
    */
   private async executeCrossChainSwap(
     action: CrossChainSwapAction,
     execution: WorkflowExecution
   ): Promise<void> {
+    const workflow = this.workflows.get(execution.workflowId);
+    
+    // Check if workflow should execute through Smart Account
+    if (workflow?.safeAddress) {
+      return this.executeCrossChainSwapViaSafe(action, execution, workflow.safeAddress);
+    }
+    
+    // Otherwise, execute directly
     // Step 1: Request quote
     const quoteStep: ExecutionStep = {
       id: `step_${Date.now()}_1`,
@@ -284,5 +304,57 @@ export class WorkflowEngine {
     return Array.from(this.executions.values()).filter(
       e => e.workflowId === workflowId
     );
+  }
+
+  /**
+   * Execute cross-chain swap through Smart Account (Safe)
+   * 
+   * This creates a multi-sig transaction that requires approval
+   * from Safe owners before execution
+   */
+  private async executeCrossChainSwapViaSafe(
+    action: CrossChainSwapAction,
+    execution: WorkflowExecution,
+    safeAddress: string
+  ): Promise<void> {
+    const smartAccount = this.smartAccounts.get(safeAddress);
+    
+    if (!smartAccount) {
+      throw new Error(`Smart Account not registered: ${safeAddress}`);
+    }
+
+    console.log(`[WorkflowEngine] Executing swap through Safe: ${safeAddress}`);
+
+    // Step 1: Create Safe transaction for SideShift swap
+    const safeStep: ExecutionStep = {
+      id: `step_${Date.now()}_safe`,
+      type: 'quote_request',
+      status: 'executing',
+      timestamp: new Date(),
+    };
+    execution.steps.push(safeStep);
+
+    const result = await smartAccount.executeSideShiftSwap(this.sideshift, {
+      depositCoin: action.depositCoin,
+      depositNetwork: action.depositNetwork,
+      settleCoin: action.settleCoin,
+      settleNetwork: action.settleNetwork,
+      amount: action.amount,
+      settleAddress: action.settleAddress,
+    });
+
+    safeStep.status = 'completed';
+    safeStep.data = result;
+
+    console.log(
+      `[WorkflowEngine] Safe transaction created:\n` +
+      `  Safe TX Hash: ${result.safeTxHash}\n` +
+      `  Shift ID: ${result.shiftId}\n` +
+      `  Deposit Address: ${result.depositAddress}\n` +
+      `  Status: Awaiting multi-sig approval`
+    );
+
+    // Note: In production, you'd monitor the Safe transaction status
+    // and execute it once threshold is met
   }
 }
