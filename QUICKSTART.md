@@ -1,33 +1,38 @@
-# ShiftFlow - Quick Start Guide
+# Quick Start
 
-## 🚀 Get Running in 5 Minutes
+This takes about 5 minutes.
 
-### Step 1: Install Dependencies
+## Prerequisites
+
+- Node.js 18+
+- SideShift account (free)
+
+## Setup
+
+**1. Get SideShift credentials**
+
+Go to https://sideshift.ai/account and copy:
+- Your Private Key (keep this secret)
+- Your Account ID
+
+**2. Install and configure**
 
 ```bash
-cd shiftflow
+git clone https://github.com/AlexD-Great/Shiftflow.git
+cd Shiftflow
 npm install
-```
 
-### Step 2: Get SideShift Credentials
-
-1. Visit https://sideshift.ai/account
-2. Your account is created automatically
-3. Copy your **Private Key** and **Account ID**
-
-### Step 3: Configure Environment
-
-```bash
+cd packages/engine
 cp .env.example .env
 ```
 
-Edit `.env`:
+Edit `.env` with your credentials:
 ```env
-SIDESHIFT_SECRET=your_private_key_here
-AFFILIATE_ID=your_account_id_here
+SIDESHIFT_SECRET=your_private_key
+AFFILIATE_ID=your_account_id
 ```
 
-### Step 4: Run the Demo
+**3. Run the demo**
 
 ```bash
 cd packages/engine
@@ -90,96 +95,62 @@ Run it:
 npx tsx test.ts
 ```
 
-## 📦 What You Built
+## What's Running
 
-- ✅ **Backend Engine**: Monitors conditions and executes workflows
-- ✅ **SideShift Integration**: Full API lifecycle (quote → shift → monitor)
-- ✅ **Price Oracle**: Real-time price monitoring via CoinGecko
-- ✅ **SDK**: Clean TypeScript API for developers
-- ✅ **Demo Workflow**: Working example you can customize
+The demo monitors ETH price every 30 seconds. When it drops below $3000, it'll execute a cross-chain swap from ETH on Arbitrum to BTC.
 
-## 🎯 Next Steps
+You can modify the workflow in `packages/engine/src/demo.ts` to:
+- Change the token being monitored
+- Adjust the price threshold
+- Swap to different chains/tokens
+- Change the amount
 
-### Customize the Demo Workflow
+## Next Steps
 
-Edit `packages/engine/src/demo.ts`:
+**Create your own workflow**
 
 ```typescript
-const demoWorkflow: Workflow = {
-  // ... existing config
-  condition: {
-    type: ConditionType.PRICE_THRESHOLD,
-    token: 'BTC',  // Change token
-    comparison: 'above',  // Change direction
-    threshold: 95000,  // Change price
-    currency: 'USD',
-  },
-  actions: [
-    {
-      type: ActionType.CROSS_CHAIN_SWAP,
-      depositCoin: 'btc',  // Change from coin
-      depositNetwork: 'bitcoin',
-      settleCoin: 'usdc',  // Change to coin
-      settleNetwork: 'arbitrum',
-      amount: '0.005',  // Change amount
-      settleAddress: 'YOUR_ADDRESS_HERE',  // Your address!
-    },
-  ],
-};
+import { createWorkflow } from '@shiftflow/sdk';
+
+const myWorkflow = createWorkflow()
+  .id('my-workflow')
+  .name('BTC Profit Taking')
+  .userId('user_123')
+  .whenPriceIs('BTC', 'above', 100000)
+  .thenSwap({
+    amount: '0.01',
+    fromCoin: 'btc',
+    fromNetwork: 'bitcoin',
+    toCoin: 'usdc',
+    toNetwork: 'arbitrum',
+    toAddress: 'your_address_here'
+  })
+  .build();
 ```
 
-### Build a Frontend (Optional)
+**Integrate into your app**
 
+The SDK is designed to be embedded in existing applications. Check `packages/sdk/README.md` for the full API.
+
+## Troubleshooting
+
+**Module not found errors**
 ```bash
-cd packages/web
-npm install
-npm run dev
+npm install  # Run from root directory
 ```
 
-Visit http://localhost:3000
-
-### Deploy to Production
-
-See [DEPLOYMENT.md](./docs/DEPLOYMENT.md) for production setup.
-
-## 🔍 Troubleshooting
-
-**Error: "Cannot find module"**
-```bash
-# Run in root directory
-npm install
-```
-
-**Error: "Invalid credentials"**
-- Double-check `.env` file
-- Ensure no extra spaces in values
-- Get fresh credentials from https://sideshift.ai/account
-
-**Price checks not working**
-- Free CoinGecko API has rate limits
-- Add `COINGECKO_API_KEY` to `.env` for better limits
+**Invalid credentials**
+- Check your `.env` file for typos
+- Make sure there are no extra spaces
+- Get fresh credentials from SideShift
 
 **Workflow not triggering**
-- Check if condition is actually met (look at console logs)
-- Verify price threshold is realistic
-- Try changing comparison direction for testing
+- Check the console logs to see current price vs threshold
+- For testing, set a threshold that will definitely trigger
+- Remember: the demo uses small amounts to avoid accidental large swaps
 
-## 📚 Learn More
+## More Info
 
-- [Full Documentation](./README.md)
-- [API Reference](./docs/API_REFERENCE.md)
-- [Workflow Examples](./docs/EXAMPLES.md)
-- [SideShift API Docs](https://docs.sideshift.ai/)
-
-## 💡 Pro Tips
-
-1. **Start with high/low thresholds** that won't trigger immediately
-2. **Use small amounts** for testing (0.001 BTC, 0.01 ETH)
-3. **Monitor the logs** to understand execution flow
-4. **Test conditions** by temporarily changing thresholds
-
-## 🎉 You're Ready!
-
-You now have a working conditional execution layer for cross-chain DeFi. Start building your own workflows!
-
-**Need help?** Open an issue on GitHub or check the docs.
+- [Architecture](./ARCHITECTURE.md) - How it all works
+- [Examples](./docs/EXAMPLES.md) - More workflow patterns
+- [SDK Docs](./packages/sdk/README.md) - Full API reference

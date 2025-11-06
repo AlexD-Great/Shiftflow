@@ -1,89 +1,100 @@
 # ShiftFlow
 
-**Stop building swaps. Start building workflows.**
+A conditional execution layer for cross-chain DeFi operations.
 
-ShiftFlow is a conditional execution layer for cross-chain DeFi that enables developers to compose multi-step, automated workflows triggered by custom conditions.
+## What This Does
 
-## 🎯 What is ShiftFlow?
+I built ShiftFlow because I was tired of manually monitoring prices and executing swaps across different chains. The idea is simple: define what you want to happen and when, then let the system handle it.
 
-ShiftFlow transforms the SideShift.ai API from a simple swap tool into a powerful automation platform. Define workflows like:
+For example:
+- Swap ETH to BTC when the price drops below $3000
+- Move assets between chains when certain conditions are met
+- Automate treasury management based on market conditions
 
-- **"When ETH drops below $3000, swap 1 ETH from Arbitrum to BTC"**
-- **"When a new pool on Base launches with APR > 25%, bridge and deposit liquidity"**
-- **"When AI predicts a downtrend, rebalance treasury from ETH to BTC"**
+It's built on top of SideShift's API, which handles the actual cross-chain swaps. ShiftFlow adds the automation layer.
 
-## 🏗️ Architecture
+## How It Works
 
-```
-┌─────────────────────────────────────────────────────────┐
-│                    ShiftFlow Platform                    │
-├─────────────────────────────────────────────────────────┤
-│  Frontend (Next.js)  │  Backend (Node.js)  │  SDK (NPM) │
-│  - Workflow Builder  │  - Execution Engine │  - Types   │
-│  - Dashboard         │  - SideShift API    │  - Client  │
-│  - Monitoring        │  - State Machine    │  - Hooks   │
-└─────────────────────────────────────────────────────────┘
-```
+The system has three main parts:
 
-## 📦 Packages
+**Backend Engine** (`packages/engine`)
+- Monitors conditions (price thresholds, time triggers, etc.)
+- Executes workflows when conditions are met
+- Handles the full SideShift API lifecycle
 
-- **`@shiftflow/engine`** - Backend workflow execution engine
-- **`@shiftflow/web`** - Frontend workflow builder and dashboard
-- **`@shiftflow/sdk`** - TypeScript SDK for developers
+**TypeScript SDK** (`packages/sdk`)
+- Clean API for creating workflows
+- Type-safe interfaces
+- Easy integration into existing projects
 
-## 🚀 Quick Start
+**Frontend** (`packages/web`) - Coming soon
+- Visual workflow builder
+- Dashboard for monitoring active workflows
+
+## Getting Started
+
+You'll need a SideShift account first. Go to https://sideshift.ai/account and grab your private key and account ID.
 
 ```bash
-# Install dependencies
+# Clone and install
+git clone https://github.com/AlexD-Great/Shiftflow.git
+cd Shiftflow
 npm install
 
-# Set up environment variables
+# Set up your credentials
+cd packages/engine
 cp .env.example .env
+# Edit .env with your SideShift credentials
 
-# Start development servers
+# Run the demo
 npm run dev
 ```
 
-## 🔧 Environment Variables
+The demo workflow monitors ETH price and will trigger a swap when it drops below $3000. You can modify the conditions in `packages/engine/src/demo.ts`.
 
-```env
-# SideShift API
-SIDESHIFT_SECRET=your_private_key
-AFFILIATE_ID=your_account_id
+## Example Workflows
 
-# Database
-DATABASE_URL=postgresql://...
+I've included several example workflows in the docs:
 
-# Optional: Price Oracles
-COINGECKO_API_KEY=your_key
+**Price-Based Triggers**
+```typescript
+const workflow = createWorkflow()
+  .whenPriceIs('ETH', 'below', 3000)
+  .thenSwap({
+    from: 'eth/arbitrum',
+    to: 'btc/bitcoin',
+    amount: '0.1'
+  })
+  .build();
 ```
 
-## 📚 Documentation
+**Treasury Management**
+- Automatically rebalance when BTC hits certain thresholds
+- Move profits to stablecoins
+- DCA strategies
 
-- [Getting Started](./docs/getting-started.md)
-- [API Reference](./docs/api-reference.md)
-- [Workflow Examples](./docs/examples.md)
+Check `docs/EXAMPLES.md` for more.
 
-## 🎮 Demo Workflows
+## Why I Built This
 
-### 1. DeFi Sniper
-Automatically detect high-yield pools and execute cross-chain liquidity provision.
+Most DeFi tools are just UIs for swapping tokens. I wanted something that could actually automate strategies. SideShift has a solid API for cross-chain swaps, but there's no good way to trigger them conditionally.
 
-### 2. AI Treasury Manager
-Use AI predictions to rebalance treasury assets across chains.
+This project fills that gap. It's infrastructure that other developers can build on top of.
 
-### 3. Gaming Cash-Out
-Automatically convert in-game tokens to stablecoins when thresholds are met.
+## Technical Stack
 
-## 🏆 Built for SideShift Wave Hack
+- TypeScript throughout
+- Node.js for the backend engine
+- CoinGecko for price data
+- SideShift API for cross-chain swaps
 
-ShiftFlow showcases the power of the SideShift.ai API by enabling:
-- ✅ Complex multi-step workflows
-- ✅ Conditional execution logic
-- ✅ Cross-chain automation
-- ✅ Developer-friendly SDK
-- ✅ Non-custodial architecture
+## Documentation
 
-## 📄 License
+- [Quick Start Guide](./QUICKSTART.md)
+- [Architecture Details](./ARCHITECTURE.md)
+- [Workflow Examples](./docs/EXAMPLES.md)
+- [SDK Documentation](./packages/sdk/README.md)
+
+## License
 
 MIT

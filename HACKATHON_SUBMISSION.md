@@ -1,276 +1,159 @@
 # ShiftFlow - SideShift Wave Hack Submission
 
-## Project Information
+## Project Info
 
-**Project Name**: ShiftFlow  
-**Tagline**: Stop building swaps. Start building workflows.  
-**Primary Track**: 🔀 Cross-Chain Power in DeFi  
-**Secondary Tracks**: 🤖 AI + Automation, 👝 Zero UI
+**Name**: ShiftFlow  
+**Track**: Cross-Chain Power in DeFi  
+**Repository**: https://github.com/AlexD-Great/Shiftflow  
+**Developer**: AlexD-Great
 
-## Team
+## What I Built
 
-**AlexD-Great**  
-GitHub: https://github.com/AlexD-Great  
-Repository: https://github.com/AlexD-Great/Shiftflow
+ShiftFlow is a conditional execution layer for cross-chain DeFi. Think of it as automation infrastructure for SideShift - instead of manually executing swaps, you define conditions and actions, then let the system handle it.
 
-## Project Description
+## The Problem
 
-ShiftFlow is a conditional execution layer for cross-chain DeFi that transforms the SideShift API from a simple swap tool into a powerful automation platform. Instead of manually executing multi-step cross-chain operations, developers and users can define workflows: "When [CONDITION] is met, perform these [ACTIONS]."
+I've been using DeFi for a while now, and one thing that always frustrated me was the manual nature of everything. You have to constantly watch prices, manually execute swaps across different chains, and hope you don't miss opportunities while you're asleep or busy.
 
-### The Problem
+Most existing tools are just UIs for swapping - they don't actually solve the automation problem. And the few automation tools that exist are either custodial (you have to trust them with your funds) or limited to single chains.
 
-Current DeFi workflows are:
-- **Manual**: Users must constantly monitor prices and opportunities
-- **Fragmented**: Multi-step operations require multiple transactions across chains
-- **Error-Prone**: Human mistakes in timing and execution
-- **Opportunity Loss**: Missing optimal entry/exit points while sleeping
+## My Solution
 
-### The Solution
+ShiftFlow adds a workflow layer on top of SideShift's cross-chain swap API. You define:
+- **Conditions**: "When ETH drops below $3000" or "When BTC hits $100k"
+- **Actions**: "Swap X amount from Chain A to Chain B"
 
-ShiftFlow provides:
-- **Conditional Execution**: Automated triggers based on price, time, or AI signals
-- **Cross-Chain Orchestration**: Seamless multi-chain workflows via SideShift
-- **Developer SDK**: Clean TypeScript API for easy integration
-- **Non-Custodial**: Users maintain full control of their funds
-
-## Key Features
-
-### 1. Workflow Engine
-- Monitors conditions in real-time
-- Executes actions automatically when triggered
-- Handles full SideShift lifecycle (quote → shift → monitor)
-- Robust error handling and retry logic
-
-### 2. Price Oracle Integration
-- Real-time price monitoring via CoinGecko
-- Support for 100+ tokens
-- Configurable thresholds and comparisons
-
-### 3. Developer SDK
-- Fluent API for workflow creation
-- Full TypeScript support
-- Zero-config setup
-- Comprehensive documentation
-
-### 4. Demo Workflows
-
-**DeFi Sniper**:
-```typescript
-whenPriceIs('ETH', 'below', 3000)
-  .thenSwap({ 
-    from: 'eth/arbitrum', 
-    to: 'btc/bitcoin' 
-  })
-```
-
-**Treasury Manager**:
-```typescript
-whenPriceIs('BTC', 'above', 100000)
-  .thenSwap({ 
-    from: 'btc/bitcoin', 
-    to: 'usdc/arbitrum' 
-  })
-```
-
-**Gaming Cash-Out**:
-```typescript
-whenPriceIs('AVAX', 'above', 40)
-  .thenSwap({ 
-    from: 'avax/avalanche', 
-    to: 'usdc/polygon' 
-  })
-```
+The system monitors conditions and executes actions automatically. It's non-custodial - you're just defining logic, not handing over your keys.
 
 ## Technical Implementation
 
-### Architecture
+### Backend Engine (`packages/engine`)
 
-```
-Frontend (Next.js) ←→ Backend (Node.js) ←→ SDK (NPM)
-                           ↓
-                    Workflow Engine
-                           ↓
-        ┌──────────────────┼──────────────────┐
-        ↓                  ↓                  ↓
-   Price Oracle      SideShift API      State Machine
-```
+The core is a Node.js workflow engine that:
+- Polls price oracles (CoinGecko) to check conditions
+- Manages the full SideShift API lifecycle (quote → fixed shift → monitoring)
+- Handles state management and error recovery
+- Runs workflows in a continuous monitoring loop
 
-### SideShift API Integration
+Key files:
+- `workflow-engine.ts` - Core orchestration logic
+- `sideshift.ts` - SideShift API client
+- `price-oracle.ts` - Price monitoring service
 
-We implement the complete SideShift API lifecycle:
+### TypeScript SDK (`packages/sdk`)
 
-1. **Quote Request**: Get current rates and amounts
-2. **Fixed Shift Creation**: Lock in the quote
-3. **Status Monitoring**: Poll until completion
-4. **Error Handling**: Retry logic and fallbacks
+I wanted other developers to be able to integrate this easily, so I built a clean SDK with a fluent API:
 
-**Code Example**:
 ```typescript
-// Full workflow execution
-const { quote, shift, finalStatus } = await sideshift.executeSwap({
-  depositCoin: 'eth',
-  depositNetwork: 'arbitrum',
-  settleCoin: 'btc',
-  settleNetwork: 'bitcoin',
-  depositAmount: '0.1',
-  settleAddress: 'bc1q...',
-});
+const workflow = createWorkflow()
+  .id('my-workflow')
+  .name('BTC Profit Taking')
+  .whenPriceIs('BTC', 'above', 100000)
+  .thenSwap({
+    amount: '0.01',
+    fromCoin: 'btc',
+    fromNetwork: 'bitcoin',
+    toCoin: 'usdc',
+    toNetwork: 'arbitrum',
+    toAddress: 'your_address'
+  })
+  .build();
 ```
 
-### Tech Stack
+### SideShift Integration
 
-- **Backend**: Node.js, TypeScript, Express
-- **Frontend**: Next.js 14, TailwindCSS, shadcn/ui
-- **SDK**: TypeScript with Zod validation
-- **APIs**: SideShift v2, CoinGecko
-- **Tooling**: Turbo (monorepo), tsx (dev)
+The integration handles the complete SideShift workflow:
 
-## How to Run
+1. **Quote Request**: Get current rates and limits
+2. **Fixed Shift Creation**: Lock in the rate
+3. **Deposit Monitoring**: Wait for user deposit
+4. **Settlement Tracking**: Monitor until completion
 
-### Quick Start
+All error cases are handled - network failures, rate changes, timeout scenarios, etc.
+
+## Use Cases
+
+**DeFi Sniper**: Automatically enter positions when prices hit targets
+```typescript
+whenPriceIs('ETH', 'below', 3000)
+  .thenSwap({ from: 'eth/arbitrum', to: 'btc/bitcoin' })
+```
+
+**Treasury Management**: Rebalance holdings based on market conditions
+```typescript
+whenPriceIs('BTC', 'above', 100000)
+  .thenSwap({ from: 'btc/bitcoin', to: 'usdc/arbitrum' })
+```
+
+**Gaming**: Auto-convert in-game tokens to stablecoins
+```typescript
+whenPriceIs('AVAX', 'above', 40)
+  .thenSwap({ from: 'avax/avalanche', to: 'usdc/polygon' })
+```
+
+## What's Working
+
+- Complete SideShift API integration
+- Price oracle monitoring (CoinGecko)
+- Workflow engine with condition evaluation
+- TypeScript SDK with fluent API
+- Working demo that monitors ETH price
+- Comprehensive documentation
+
+## What's Next
+
+**Short term**:
+- Add more condition types (time-based, liquidity-based)
+- Build a visual workflow builder UI
+- Add webhook notifications
+- Database persistence for workflow history
+
+**Long term**:
+- Smart contract integration for trustless execution
+- Multi-action workflows (chain multiple swaps)
+- AI-powered condition triggers
+- Enterprise features (team management, permissions)
+
+## Why This Matters for SideShift
+
+Most hackathon projects build yet another swap UI. I wanted to build something that makes SideShift more valuable - infrastructure that other developers can build on.
+
+This turns SideShift from "a swap API" into "the automation layer for cross-chain DeFi". It's the kind of thing that could drive serious API usage and developer adoption.
+
+## Technical Stack
+
+- TypeScript throughout
+- Node.js for the backend
+- CoinGecko API for price data
+- SideShift API for swaps
+- Monorepo structure (Turborepo)
+
+## Running It
 
 ```bash
-# 1. Clone and install
-git clone <repo-url>
-cd shiftflow
+git clone https://github.com/AlexD-Great/Shiftflow.git
+cd Shiftflow
 npm install
 
-# 2. Configure
-cp .env.example .env
-# Edit .env with your SideShift credentials
-
-# 3. Run demo
 cd packages/engine
+cp .env.example .env
+# Add your SideShift credentials
 npm run dev
 ```
 
-### Using the SDK
-
-```bash
-npm install @shiftflow/sdk
-```
-
-```typescript
-import { ShiftFlowClient, createWorkflow } from '@shiftflow/sdk';
-
-const client = new ShiftFlowClient({
-  sideshiftSecret: process.env.SIDESHIFT_SECRET!,
-  sideshiftAffiliateId: process.env.AFFILIATE_ID!,
-});
-
-const workflow = createWorkflow()
-  .id('my-workflow')
-  .name('My First Workflow')
-  .userId('user_123')
-  .whenPriceIs('ETH', 'below', 3000)
-  .thenSwap({
-    amount: '0.1',
-    fromCoin: 'eth',
-    fromNetwork: 'mainnet',
-    toCoin: 'usdc',
-    toNetwork: 'arbitrum',
-    toAddress: '0xYourAddress',
-  })
-  .build();
-
-client.registerWorkflow(workflow);
-client.startMonitoring();
-```
-
-## Judging Criteria Alignment
-
-### API Integration & Technical Execution (20%)
-- ✅ Complete SideShift API lifecycle implementation
-- ✅ Sophisticated workflow engine with state management
-- ✅ Proper error handling and retry logic
-- ✅ Modular, well-architected codebase
-
-### Originality & Innovation (20%)
-- ✅ Novel "Zapier for Cross-Chain DeFi" concept
-- ✅ Conditional execution layer (not just another swap UI)
-- ✅ Composable workflows that other dApps can integrate
-- ✅ SDK-first approach for developer adoption
-
-### Use Case Relevance & Value Creation (15%)
-- ✅ Solves real pain point: manual multi-step DeFi operations
-- ✅ Clear value for multiple personas (traders, DAOs, gamers)
-- ✅ Revenue model: fees on executed workflows or SaaS for developers
-- ✅ Potential for significant user adoption
-
-### Crypto-Native Thinking (15%)
-- ✅ Non-custodial design (users control funds)
-- ✅ Oracle integration for off-chain data
-- ✅ Smart account compatible
-- ✅ Cross-chain native from day one
-
-### Product Design & Usability (15%)
-- ✅ Clean, intuitive SDK with fluent API
-- ✅ Comprehensive documentation
-- ✅ Working demo with clear examples
-- ✅ Developer-friendly error messages
-
-### Presentation & Communication (15%)
-- ✅ Clear problem-solution narrative
-- ✅ Working demo showcasing key features
-- ✅ Well-documented codebase
-- ✅ Strong README and getting started guide
-
-## Business Model
-
-### Revenue Streams
-1. **Transaction Fees**: 0.1-0.5% on executed workflows
-2. **Premium Features**: Advanced conditions (AI signals, complex logic)
-3. **Enterprise SaaS**: White-label solution for protocols
-4. **Affiliate Revenue**: Earn from SideShift affiliate program
-
-### Go-to-Market
-1. **Phase 1**: Launch SDK, target developer community
-2. **Phase 2**: Build integrations with popular wallets/dApps
-3. **Phase 3**: Launch consumer-facing web app
-4. **Phase 4**: Enterprise partnerships with DAOs and protocols
-
-## Future Roadmap
-
-### Q1 2025
-- [ ] Add more condition types (time-based, liquidity pools)
-- [ ] AI integration for predictive signals
-- [ ] Multi-action workflows
-- [ ] Webhook notifications
-
-### Q2 2025
-- [ ] Frontend workflow builder UI
-- [ ] Mobile app (React Native)
-- [ ] Database persistence (PostgreSQL)
-- [ ] Advanced analytics dashboard
-
-### Q3 2025
-- [ ] Smart contract integration for on-chain conditions
-- [ ] Support for more DEX aggregators
-- [ ] Telegram/Discord bot interface
-- [ ] Enterprise features (team management, permissions)
-
-## Why ShiftFlow Wins
-
-1. **Not Just a Swap UI**: We're building infrastructure that makes SideShift indispensable
-2. **Developer-First**: SDK approach enables ecosystem growth
-3. **Real Business Potential**: Clear path to revenue and adoption
-4. **Technical Excellence**: Clean, well-architected, production-ready code
-5. **Strategic Alignment**: Exactly what SideShift wants to see
+The demo monitors ETH price and will execute a swap when it drops below $3000.
 
 ## Links
 
-- **GitHub**: https://github.com/AlexD-Great/Shiftflow
-- **Demo Video**: [Coming soon - YouTube/Loom URL]
-- **Live Demo**: [Coming soon - Deployed URL]
-- **Documentation**: https://github.com/AlexD-Great/Shiftflow#readme
+- **Repository**: https://github.com/AlexD-Great/Shiftflow
+- **Demo Video**: [Coming soon]
+- **Documentation**: See README and docs/ folder
 
 ## Contact
 
 - **GitHub**: @AlexD-Great
 - **Repository**: https://github.com/AlexD-Great/Shiftflow
-- **Email**: [Add your email]
-- **Twitter**: [Add your Twitter handle]
 
 ---
 
-**Built with ❤️ for SideShift Wave Hack**
+Built for SideShift Wave Hack - Wave 2
