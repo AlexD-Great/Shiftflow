@@ -10,20 +10,26 @@ export default function Home() {
           <p className="text-xl text-slate-300 mb-8">
             Conditional execution layer for cross-chain DeFi
           </p>
-          <div className="flex gap-4 justify-center">
+          <div className="flex gap-4 justify-center flex-wrap">
+            <a
+              href="/builder"
+              className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+            >
+              Build Workflow
+            </a>
+            <a
+              href="/dashboard"
+              className="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition-colors"
+            >
+              View Dashboard
+            </a>
             <a
               href="https://github.com/AlexD-Great/Shiftflow"
               target="_blank"
               rel="noopener noreferrer"
-              className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
-            >
-              View on GitHub
-            </a>
-            <a
-              href="https://github.com/AlexD-Great/Shiftflow#getting-started"
               className="px-6 py-3 bg-slate-700 hover:bg-slate-600 text-white rounded-lg font-medium transition-colors"
             >
-              Get Started
+              GitHub
             </a>
           </div>
         </header>
