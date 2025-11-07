@@ -5,6 +5,7 @@
 **Name**: ShiftFlow  
 **Track**: Cross-Chain Power in DeFi  
 **Repository**: https://github.com/AlexD-Great/Shiftflow  
+**Live Demo**: https://shiftflow-web.vercel.app/  
 **Developer**: AlexD-Great
 
 ## What I Built
@@ -93,26 +94,47 @@ whenPriceIs('AVAX', 'above', 40)
 
 ## What's Working
 
-- Complete SideShift API integration
+### Core Features ✅
+- Complete SideShift API integration (quote, shift, monitoring)
 - Price oracle monitoring (CoinGecko)
-- Workflow engine with condition evaluation
+- Workflow engine with multi-condition evaluation (AND/OR logic)
 - TypeScript SDK with fluent API
 - Working demo that monitors ETH price
 - Comprehensive documentation
 
+### Smart Account Integration ✅
+- **Safe (Gnosis Safe) SDK integration** - Full multi-sig workflow support
+- Transaction proposal and approval system
+- Balance and owner management
+- SideShift swaps through Safe accounts
+- Automatic routing when `safeAddress` is set
+
+### Advanced Workflows ✅
+- **Multi-condition logic** - AND/OR operators for complex conditions
+- **Multiple condition types** - Price, time, balance, gas thresholds
+- **Multi-step actions** - Sequential swap → notify → webhook chains
+- **Notification system** - Email, Telegram, Discord integrations
+- **Webhook support** - Trigger external systems
+
+### User Interface ✅
+- **Interactive Workflow Builder** - Visual form-based workflow creation
+- **Real-Time Dashboard** - Live monitoring with execution history
+- **Live Preview** - See generated JSON as you build
+- **Safe Integration UI** - Toggle multi-sig execution
+- **Deployed on Vercel** - https://shiftflow-web.vercel.app/
+
 ## What's Next
 
 **Short term**:
-- Add more condition types (time-based, liquidity-based)
-- Build a visual workflow builder UI
-- Add webhook notifications
 - Database persistence for workflow history
+- User authentication and workflow management
+- More condition types (liquidity-based, on-chain events)
 
 **Long term**:
 - Smart contract integration for trustless execution
-- Multi-action workflows (chain multiple swaps)
 - AI-powered condition triggers
 - Enterprise features (team management, permissions)
+- Mobile app
 
 ## Why This Matters for SideShift
 
@@ -122,11 +144,12 @@ This turns SideShift from "a swap API" into "the automation layer for cross-chai
 
 ## Technical Stack
 
-- TypeScript throughout
-- Node.js for the backend
-- CoinGecko API for price data
-- SideShift API for swaps
-- Monorepo structure (Turborepo)
+- **Frontend:** Next.js 15, React 18, Tailwind CSS
+- **Backend:** TypeScript, Node.js
+- **Smart Accounts:** Safe (Gnosis Safe) Protocol Kit & API Kit
+- **APIs:** SideShift v2, CoinGecko
+- **Deployment:** Vercel (auto-deploy from GitHub)
+- **Monorepo:** Turborepo structure
 
 ## Running It
 

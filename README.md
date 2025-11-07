@@ -2,6 +2,10 @@
 
 A conditional execution layer for cross-chain DeFi operations.
 
+**🚀 Live Demo:** https://shiftflow-web.vercel.app/
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/AlexD-Great/Shiftflow)
+
 ## What This Does
 
 I built ShiftFlow because I was tired of manually monitoring prices and executing swaps across different chains. The idea is simple: define what you want to happen and when, then let the system handle it.
@@ -27,9 +31,10 @@ The system has three main parts:
 - Type-safe interfaces
 - Easy integration into existing projects
 
-**Frontend** (`packages/web`) - Coming soon
-- Visual workflow builder
-- Dashboard for monitoring active workflows
+**Frontend** (`packages/web`)
+- Interactive workflow builder with live preview
+- Real-time monitoring dashboard
+- Smart Account (Safe) integration UI
 
 ## Getting Started
 
@@ -81,12 +86,24 @@ Most DeFi tools are just UIs for swapping tokens. I wanted something that could 
 
 This project fills that gap. It's infrastructure that other developers can build on top of.
 
+## Screenshots
+
+### Homepage
+![ShiftFlow Homepage](./screenshots/homepage.png)
+
+### Workflow Builder
+![Workflow Builder](./screenshots/builder.png)
+
+### Real-Time Dashboard
+![Dashboard](./screenshots/dashboard.png)
+
 ## Technical Stack
 
-- TypeScript throughout
-- Node.js for the backend engine
-- CoinGecko for price data
-- SideShift API for cross-chain swaps
+- **Frontend:** Next.js 15, React 18, Tailwind CSS
+- **Backend:** TypeScript, Node.js
+- **Smart Accounts:** Safe (Gnosis Safe) SDK
+- **APIs:** SideShift v2, CoinGecko
+- **Deployment:** Vercel
 
 ## Documentation
 
