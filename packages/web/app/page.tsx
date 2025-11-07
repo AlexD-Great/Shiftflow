@@ -18,6 +18,12 @@ export default function Home() {
               🔐 Smart Account Demo
             </a>
             <a
+              href="/templates"
+              className="px-6 py-3 bg-orange-600 hover:bg-orange-700 text-white rounded-lg font-medium transition-colors"
+            >
+              📚 Templates
+            </a>
+            <a
               href="/builder"
               className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
             >
