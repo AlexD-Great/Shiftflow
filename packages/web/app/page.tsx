@@ -18,40 +18,33 @@ export default function Home() {
           <p className="text-lg text-slate-400 mb-12 max-w-2xl mx-auto">
             Set conditions, define actions, and let ShiftFlow execute your workflows automatically across multiple blockchains
           </p>
-          <div className="flex gap-4 justify-center flex-wrap mb-8">
-            <a
-              href="/demo/safe"
-              className="px-8 py-4 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-xl font-semibold transition-all transform hover:scale-105 shadow-lg hover:shadow-xl"
-            >
-              🔐 Smart Account Demo
-            </a>
+          <div className="flex gap-4 justify-center flex-wrap">
             <a
               href="/builder"
-              className="px-8 py-4 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white rounded-xl font-semibold transition-all transform hover:scale-105 shadow-lg hover:shadow-xl"
+              className="group px-8 py-4 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white rounded-xl font-semibold transition-all transform hover:scale-105 shadow-lg hover:shadow-xl"
             >
-              Build Workflow
+              <div className="flex items-center gap-2">
+                <span>Build Workflow</span>
+                <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                </svg>
+              </div>
             </a>
-          </div>
-          <div className="flex gap-3 justify-center flex-wrap">
+            <a
+              href="/demo/safe"
+              className="group px-8 py-4 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-xl font-semibold transition-all transform hover:scale-105 shadow-lg hover:shadow-xl"
+            >
+              <div className="flex items-center gap-2">
+                <span>🔐 Smart Account Demo</span>
+              </div>
+            </a>
             <a
               href="/templates"
-              className="px-6 py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-lg font-medium transition-colors border border-slate-700"
+              className="group px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-xl font-semibold transition-all transform hover:scale-105 shadow-lg hover:shadow-xl"
             >
-              📚 Templates
-            </a>
-            <a
-              href="/dashboard"
-              className="px-6 py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-lg font-medium transition-colors border border-slate-700"
-            >
-              Dashboard
-            </a>
-            <a
-              href="https://github.com/AlexD-Great/Shiftflow"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="px-6 py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-lg font-medium transition-colors border border-slate-700"
-            >
-              GitHub
+              <div className="flex items-center gap-2">
+                <span>📚 Browse Templates</span>
+              </div>
             </a>
           </div>
         </header>
