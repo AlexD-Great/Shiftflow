@@ -20,7 +20,7 @@ export function useSafe() {
   const [safeInfo, setSafeInfo] = useState<SafeInfo | null>(null)
 
   const loadSafeInfo = async (safeAddress: string) => {
-    if (!isConnected || !walletClient) {
+    if (!isConnected || !address) {
       setError('Please connect your wallet first')
       return
     }
@@ -29,9 +29,12 @@ export function useSafe() {
     setError(null)
 
     try {
+      // Use a public RPC provider for reading Safe data
+      const provider = publicClient?.transport?.url || 'https://eth.llamarpc.com'
+      
       // Initialize Safe Protocol Kit
       const protocolKit = await Safe.init({
-        provider: walletClient.transport.url || 'https://eth.llamarpc.com',
+        provider,
         signer: address,
         safeAddress,
       })
@@ -70,7 +73,7 @@ export function useSafe() {
   }
 
   const createTransaction = async (to: string, value: string, data: string = '0x') => {
-    if (!safeInfo || !walletClient) {
+    if (!safeInfo || !address || !isConnected) {
       setError('Safe not loaded or wallet not connected')
       return null
     }
@@ -79,8 +82,10 @@ export function useSafe() {
       setLoading(true)
       setError(null)
 
+      const provider = publicClient?.transport?.url || 'https://eth.llamarpc.com'
+      
       const protocolKit = await Safe.init({
-        provider: walletClient.transport.url || 'https://eth.llamarpc.com',
+        provider,
         signer: address,
         safeAddress: safeInfo.address,
       })
@@ -118,7 +123,7 @@ export function useSafe() {
     data: string = '0x',
     chainId: number = 1
   ) => {
-    if (!safeInfo || !walletClient || !address) {
+    if (!safeInfo || !address || !isConnected) {
       setError('Safe not loaded or wallet not connected')
       return null
     }
@@ -127,13 +132,15 @@ export function useSafe() {
       setLoading(true)
       setError(null)
 
+      const provider = publicClient?.transport?.url || 'https://eth.llamarpc.com'
+
       // Initialize API Kit
       const apiKit = new SafeApiKit({
         chainId: BigInt(chainId),
       })
 
       const protocolKit = await Safe.init({
-        provider: walletClient.transport.url || 'https://eth.llamarpc.com',
+        provider,
         signer: address,
         safeAddress: safeInfo.address,
       })
