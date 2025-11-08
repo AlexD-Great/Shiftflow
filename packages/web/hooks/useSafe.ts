@@ -12,7 +12,7 @@ interface SafeInfo {
 }
 
 export function useSafe() {
-  const { address, isConnected } = useAccount()
+  const { address, isConnected, chain } = useAccount()
   const publicClient = usePublicClient()
   const { data: walletClient } = useWalletClient()
   const [loading, setLoading] = useState(false)
@@ -65,7 +65,18 @@ export function useSafe() {
       return info
     } catch (err: any) {
       console.error('Error loading Safe:', err)
-      setError(err.message || 'Failed to load Safe data. Please check the address and network.')
+      
+      let errorMessage = 'Failed to load Safe data.'
+      
+      if (err.message?.includes('SafeProxy contract is not deployed')) {
+        errorMessage = `This Safe address is not deployed on ${chain?.name || 'this network'}. Please check:\n• The Safe address is correct\n• You're connected to the right network (Ethereum Mainnet, Sepolia, etc.)\n• The Safe exists on this network`
+      } else if (err.message?.includes('Invalid address')) {
+        errorMessage = 'Invalid Safe address format. Please enter a valid Ethereum address.'
+      } else {
+        errorMessage = err.message || 'Failed to load Safe data. Please check the address and network.'
+      }
+      
+      setError(errorMessage)
       return null
     } finally {
       setLoading(false)

@@ -5,8 +5,14 @@ import { useAccount } from 'wagmi';
 import { WalletConnect } from '@/components/wallet-connect';
 import { useSafe } from '@/hooks/useSafe';
 
+// Example Safe addresses for testing
+const EXAMPLE_SAFES = {
+  mainnet: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', // USDC Safe on Mainnet
+  sepolia: '0x...', // Add a Sepolia Safe if you have one
+}
+
 export default function SafeRealDemoPage() {
-  const { address, isConnected } = useAccount();
+  const { address, isConnected, chain } = useAccount();
   const [safeAddress, setSafeAddress] = useState('');
   const { safeInfo, loading, error, loadSafeInfo, proposeTransaction } = useSafe();
   const [proposing, setProposing] = useState(false);
@@ -67,6 +73,9 @@ export default function SafeRealDemoPage() {
               <p className="text-green-300 text-sm">
                 ✓ Wallet connected successfully
               </p>
+              <p className="text-green-200 text-xs mt-1">
+                Network: {chain?.name || 'Unknown'} (Chain ID: {chain?.id || 'N/A'})
+              </p>
             </div>
           )}
         </div>
@@ -89,8 +98,14 @@ export default function SafeRealDemoPage() {
                     className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-blue-500"
                   />
                   <p className="text-xs text-slate-500 mt-1">
-                    Enter a Safe address on Ethereum Mainnet or Sepolia testnet
+                    Enter a Safe address that exists on <span className="font-semibold text-slate-400">{chain?.name || 'your current network'}</span>
                   </p>
+                  <div className="mt-2 p-3 bg-blue-900/20 border border-blue-700/50 rounded">
+                    <p className="text-blue-300 text-xs font-medium mb-1">💡 Don't have a Safe?</p>
+                    <p className="text-blue-200 text-xs">
+                      Create one at <a href="https://app.safe.global" target="_blank" rel="noopener noreferrer" className="underline hover:text-blue-100">app.safe.global</a> or use the simulated demo instead.
+                    </p>
+                  </div>
                 </div>
                 <button
                   onClick={handleLoadSafe}
@@ -100,8 +115,9 @@ export default function SafeRealDemoPage() {
                   {loading ? 'Loading...' : 'Load Safe Data'}
                 </button>
                 {error && (
-                  <div className="p-3 bg-red-900/20 border border-red-700/50 rounded">
-                    <p className="text-red-300 text-sm">{error}</p>
+                  <div className="p-4 bg-red-900/20 border border-red-700/50 rounded">
+                    <p className="text-red-300 text-sm font-medium mb-2">❌ Error</p>
+                    <p className="text-red-200 text-sm whitespace-pre-line">{error}</p>
                   </div>
                 )}
               </div>
