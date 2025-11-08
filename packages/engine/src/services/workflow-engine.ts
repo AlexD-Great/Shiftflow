@@ -6,14 +6,17 @@ import {
   ActionType,
   PriceThresholdCondition,
   CrossChainSwapAction,
+  GasThresholdCondition,
 } from '../types';
 import { SideShiftService } from './sideshift';
 import { PriceOracleService } from './price-oracle';
+import { GasOracleService } from './gas-oracle';
 import { SmartAccountService, SmartAccountConfig } from './smart-account';
 
 export class WorkflowEngine {
   private sideshift: SideShiftService;
   private priceOracle: PriceOracleService;
+  private gasOracle: GasOracleService;
   private smartAccounts: Map<string, SmartAccountService> = new Map();
   private workflows: Map<string, Workflow> = new Map();
   private executions: Map<string, WorkflowExecution> = new Map();
@@ -22,10 +25,14 @@ export class WorkflowEngine {
   constructor(
     sideshiftSecret: string,
     sideshiftAffiliateId: string,
-    coingeckoApiKey?: string
+    coingeckoApiKey?: string,
+    etherscanApiKey?: string,
+    polygonscanApiKey?: string,
+    arbiscanApiKey?: string
   ) {
     this.sideshift = new SideShiftService(sideshiftSecret, sideshiftAffiliateId);
     this.priceOracle = new PriceOracleService(coingeckoApiKey);
+    this.gasOracle = new GasOracleService(etherscanApiKey, polygonscanApiKey, arbiscanApiKey);
   }
 
   /**
@@ -120,6 +127,9 @@ export class WorkflowEngine {
       case ConditionType.TIME_BASED:
         return this.evaluateTimeBased(condition);
       
+      case ConditionType.GAS_THRESHOLD:
+        return this.evaluateGasThreshold(condition);
+      
       case ConditionType.COMPOSITE_AND:
         return this.evaluateCompositeAnd(condition);
       
@@ -127,7 +137,6 @@ export class WorkflowEngine {
         return this.evaluateCompositeOr(condition);
       
       case ConditionType.BALANCE_THRESHOLD:
-      case ConditionType.GAS_THRESHOLD:
         console.warn(`[WorkflowEngine] Condition type not yet implemented: ${condition.type}`);
         return false;
       
@@ -156,6 +165,28 @@ export class WorkflowEngine {
     );
 
     return result.met;
+  }
+
+  /**
+   * Evaluate gas threshold condition
+   */
+  private async evaluateGasThreshold(
+    condition: GasThresholdCondition
+  ): Promise<boolean> {
+    const met = await this.gasOracle.checkGasCondition(
+      condition.network,
+      condition.comparison,
+      condition.threshold
+    );
+
+    const currentGas = await this.gasOracle.getGasPrice(condition.network);
+
+    console.log(
+      `[WorkflowEngine] Gas check: ${condition.network} = ${currentGas} gwei ` +
+      `(threshold: ${condition.comparison} ${condition.threshold} gwei) - ${met ? 'MET' : 'NOT MET'}`
+    );
+
+    return met;
   }
 
   /**

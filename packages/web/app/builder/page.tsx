@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 
-type ConditionType = 'PRICE_THRESHOLD' | 'TIME_BASED' | 'COMPOSITE_AND' | 'COMPOSITE_OR';
+type ConditionType = 'PRICE_THRESHOLD' | 'GAS_THRESHOLD' | 'TIME_BASED' | 'COMPOSITE_AND' | 'COMPOSITE_OR';
 type ActionType = 'CROSS_CHAIN_SWAP' | 'NOTIFICATION' | 'WEBHOOK' | 'MULTI_STEP';
 
 export default function WorkflowBuilder() {
@@ -16,6 +16,11 @@ export default function WorkflowBuilder() {
   const [token, setToken] = useState('ETH');
   const [comparison, setComparison] = useState<'above' | 'below'>('below');
   const [threshold, setThreshold] = useState('3000');
+
+  // Gas condition state
+  const [gasNetwork, setGasNetwork] = useState('ethereum');
+  const [gasComparison, setGasComparison] = useState<'above' | 'below'>('below');
+  const [gasThreshold, setGasThreshold] = useState('20');
 
   // Swap action state
   const [depositCoin, setDepositCoin] = useState('eth');
@@ -38,6 +43,11 @@ export default function WorkflowBuilder() {
           comparison,
           threshold: parseFloat(threshold),
           currency: 'USD',
+        }),
+        ...(conditionType === 'GAS_THRESHOLD' && {
+          network: gasNetwork,
+          comparison: gasComparison,
+          threshold: parseFloat(gasThreshold),
         }),
       },
       actions: [
@@ -137,11 +147,60 @@ export default function WorkflowBuilder() {
                     className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-blue-500"
                   >
                     <option value="PRICE_THRESHOLD">Price Threshold</option>
+                    <option value="GAS_THRESHOLD">Gas Price Threshold</option>
                     <option value="TIME_BASED">Time Based</option>
                     <option value="COMPOSITE_AND">Multiple (AND)</option>
                     <option value="COMPOSITE_OR">Multiple (OR)</option>
                   </select>
                 </div>
+
+                {conditionType === 'GAS_THRESHOLD' && (
+                  <>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-slate-300 mb-2">
+                          Network
+                        </label>
+                        <select
+                          value={gasNetwork}
+                          onChange={(e) => setGasNetwork(e.target.value)}
+                          className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                        >
+                          <option value="ethereum">Ethereum</option>
+                          <option value="polygon">Polygon</option>
+                          <option value="arbitrum">Arbitrum</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-slate-300 mb-2">
+                          Comparison
+                        </label>
+                        <select
+                          value={gasComparison}
+                          onChange={(e) => setGasComparison(e.target.value as 'above' | 'below')}
+                          className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                        >
+                          <option value="below">Below</option>
+                          <option value="above">Above</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-300 mb-2">
+                        Threshold (gwei)
+                      </label>
+                      <input
+                        type="number"
+                        value={gasThreshold}
+                        onChange={(e) => setGasThreshold(e.target.value)}
+                        className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                      />
+                      <p className="text-xs text-slate-500 mt-1">
+                        Typical: Ethereum 20-50 gwei, Polygon 30-100 gwei, Arbitrum 0.1-1 gwei
+                      </p>
+                    </div>
+                  </>
+                )}
 
                 {conditionType === 'PRICE_THRESHOLD' && (
                   <>
@@ -294,7 +353,9 @@ export default function WorkflowBuilder() {
               
               <div className="mb-4 p-4 bg-blue-900/20 border border-blue-700 rounded-lg">
                 <p className="text-blue-300 text-sm">
-                  <strong>When:</strong> {token} price is {comparison} ${threshold}
+                  <strong>When:</strong>{' '}
+                  {conditionType === 'PRICE_THRESHOLD' && `${token} price is ${comparison} $${threshold}`}
+                  {conditionType === 'GAS_THRESHOLD' && `${gasNetwork} gas is ${gasComparison} ${gasThreshold} gwei`}
                   {useSafe && ' (via Safe multi-sig)'}
                 </p>
                 <p className="text-blue-300 text-sm mt-2">
@@ -327,6 +388,7 @@ export default function WorkflowBuilder() {
                 <li>✅ Multi-condition workflows (AND/OR)</li>
                 <li>✅ Multi-step actions</li>
                 <li>✅ Price-based triggers</li>
+                <li>✅ Gas price optimization</li>
                 <li>✅ Time-based scheduling</li>
                 <li>✅ Notifications & webhooks</li>
               </ul>
