@@ -3,43 +3,53 @@ export default function Home() {
     <main className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
       <div className="container mx-auto px-4 py-16">
         {/* Header */}
-        <header className="text-center mb-16">
-          <h1 className="text-5xl font-bold text-white mb-4">
+        <header className="text-center mb-20">
+          <div className="mb-6">
+            <div className="inline-block p-4 bg-blue-600/10 rounded-2xl mb-4">
+              <div className="text-6xl">⚡</div>
+            </div>
+          </div>
+          <h1 className="text-6xl md:text-7xl font-bold text-white mb-6 bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-600">
             ShiftFlow
           </h1>
-          <p className="text-xl text-slate-300 mb-8">
-            Conditional execution layer for cross-chain DeFi
+          <p className="text-2xl text-slate-300 mb-4 font-light">
+            Automate Your Cross-Chain DeFi Strategy
           </p>
-          <div className="flex gap-4 justify-center flex-wrap">
+          <p className="text-lg text-slate-400 mb-12 max-w-2xl mx-auto">
+            Set conditions, define actions, and let ShiftFlow execute your workflows automatically across multiple blockchains
+          </p>
+          <div className="flex gap-4 justify-center flex-wrap mb-8">
             <a
               href="/demo/safe"
-              className="px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors"
+              className="px-8 py-4 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-xl font-semibold transition-all transform hover:scale-105 shadow-lg hover:shadow-xl"
             >
               🔐 Smart Account Demo
             </a>
             <a
+              href="/builder"
+              className="px-8 py-4 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white rounded-xl font-semibold transition-all transform hover:scale-105 shadow-lg hover:shadow-xl"
+            >
+              Build Workflow
+            </a>
+          </div>
+          <div className="flex gap-3 justify-center flex-wrap">
+            <a
               href="/templates"
-              className="px-6 py-3 bg-orange-600 hover:bg-orange-700 text-white rounded-lg font-medium transition-colors"
+              className="px-6 py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-lg font-medium transition-colors border border-slate-700"
             >
               📚 Templates
             </a>
             <a
-              href="/builder"
-              className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
-            >
-              Build Workflow
-            </a>
-            <a
               href="/dashboard"
-              className="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition-colors"
+              className="px-6 py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-lg font-medium transition-colors border border-slate-700"
             >
-              View Dashboard
+              Dashboard
             </a>
             <a
               href="https://github.com/AlexD-Great/Shiftflow"
               target="_blank"
               rel="noopener noreferrer"
-              className="px-6 py-3 bg-slate-700 hover:bg-slate-600 text-white rounded-lg font-medium transition-colors"
+              className="px-6 py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-lg font-medium transition-colors border border-slate-700"
             >
               GitHub
             </a>
@@ -165,12 +175,7 @@ export default function Home() {
 
         {/* Footer */}
         <footer className="mt-24 text-center text-slate-500">
-          <p>Built for SideShift Wave Hack - Wave 2</p>
-          <p className="mt-2">
-            <a href="https://github.com/AlexD-Great" className="hover:text-slate-400 transition-colors">
-              @AlexD-Great
-            </a>
-          </p>
+          <p>© 2025 ShiftFlow. All rights reserved.</p>
         </footer>
       </div>
     </main>

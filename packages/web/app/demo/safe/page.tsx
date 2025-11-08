@@ -56,10 +56,18 @@ export default function SafeDemoPage() {
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <a href="/" className="text-blue-400 hover:text-blue-300 mb-4 inline-block">
-            ← Back to Home
-          </a>
-          <h1 className="text-4xl font-bold mb-2">Smart Account Demo</h1>
+          <div className="flex items-center justify-between mb-4">
+            <a href="/" className="text-blue-400 hover:text-blue-300">
+              ← Back to Home
+            </a>
+            <a
+              href="/demo/safe-real"
+              className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium transition-colors"
+            >
+              Try Real Demo →
+            </a>
+          </div>
+          <h1 className="text-4xl font-bold mb-2">Smart Account Demo (Simulated)</h1>
           <p className="text-slate-400 text-lg">
             See how ShiftFlow executes workflows through Safe (Gnosis Safe) multi-sig accounts
           </p>
