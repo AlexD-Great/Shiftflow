@@ -1,21 +1,34 @@
-# ShiftFlow
+# ShiftFlow ⚡
 
-A conditional execution layer for cross-chain DeFi operations.
+**Automate Your Cross-Chain DeFi Strategy**
+
+A conditional execution layer for cross-chain DeFi operations with Smart Account integration, gas optimization, and real blockchain connectivity.
 
 **🚀 Live Demo:** https://shiftflow-web.vercel.app/
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/AlexD-Great/Shiftflow)
 
+## ✨ Key Features
+
+- 🔐 **Smart Account Integration** - Execute workflows through Safe (Gnosis Safe) multi-sig accounts
+- ⛽ **Gas Price Optimization** - Trigger actions only when gas prices are favorable
+- 📚 **Workflow Templates** - 8 pre-built templates for common DeFi strategies
+- 🔌 **Real Wallet Connection** - Connect MetaMask, WalletConnect, and more
+- 🌐 **Cross-Chain Swaps** - Powered by SideShift API
+- 📊 **Real-Time Dashboard** - Monitor active workflows
+- 🎨 **Professional UI** - Clean, modern interface with sidebar navigation
+
 ## What This Does
 
-I built ShiftFlow because I was tired of manually monitoring prices and executing swaps across different chains. The idea is simple: define what you want to happen and when, then let the system handle it.
+ShiftFlow automates cross-chain DeFi operations based on conditions you define. Set it and forget it.
 
-For example:
-- Swap ETH to BTC when the price drops below $3000
-- Move assets between chains when certain conditions are met
-- Automate treasury management based on market conditions
+**Example Workflows:**
+- Swap ETH to BTC when price drops below $3000 AND gas is below 20 gwei
+- Execute multi-sig treasury rebalancing on a schedule
+- Auto-compound yields when conditions are optimal
+- DCA (Dollar Cost Average) into assets at specific intervals
 
-It's built on top of SideShift's API, which handles the actual cross-chain swaps. ShiftFlow adds the automation layer.
+Built on SideShift's API for reliable cross-chain swaps, with an intelligent automation layer on top.
 
 ## How It Works
 
