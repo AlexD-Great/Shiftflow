@@ -1,42 +1,46 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useAccount } from 'wagmi';
 import { WalletConnect } from '@/components/wallet-connect';
+import { useSafe } from '@/hooks/useSafe';
 
 export default function SafeRealDemoPage() {
   const { address, isConnected } = useAccount();
   const [safeAddress, setSafeAddress] = useState('');
-  const [safeData, setSafeData] = useState<any>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const { safeInfo, loading, error, loadSafeInfo, proposeTransaction } = useSafe();
+  const [proposing, setProposing] = useState(false);
+  const [proposalResult, setProposalResult] = useState<string | null>(null);
 
-  const loadSafeData = async () => {
+  const handleLoadSafe = async () => {
     if (!safeAddress) {
-      setError('Please enter a Safe address');
       return;
     }
+    await loadSafeInfo(safeAddress);
+  };
 
-    setLoading(true);
-    setError('');
+  const handleProposeWorkflow = async () => {
+    if (!safeInfo) return;
+
+    setProposing(true);
+    setProposalResult(null);
 
     try {
-      // TODO: Integrate with Safe SDK to load real data
-      // For now, show a placeholder
-      setSafeData({
-        address: safeAddress,
-        owners: [
-          { address: address || '0x...', name: 'You' },
-          { address: '0x...', name: 'Owner 2' },
-          { address: '0x...', name: 'Owner 3' },
-        ],
-        threshold: 2,
-        balance: '0 ETH',
-      });
+      // Example: Propose a simple ETH transfer (you can customize this)
+      const result = await proposeTransaction(
+        '0x0000000000000000000000000000000000000000', // Placeholder address
+        '0', // 0 ETH
+        '0x', // No data
+        1 // Ethereum mainnet
+      );
+
+      if (result) {
+        setProposalResult(`Transaction proposed! Hash: ${result.safeTxHash}`);
+      }
     } catch (err) {
-      setError('Failed to load Safe data. Please check the address.');
+      console.error('Proposal error:', err);
     } finally {
-      setLoading(false);
+      setProposing(false);
     }
   };
 
@@ -89,7 +93,7 @@ export default function SafeRealDemoPage() {
                   </p>
                 </div>
                 <button
-                  onClick={loadSafeData}
+                  onClick={handleLoadSafe}
                   disabled={loading || !safeAddress}
                   className="px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-600 disabled:cursor-not-allowed rounded-lg font-medium transition-colors"
                 >
@@ -104,7 +108,7 @@ export default function SafeRealDemoPage() {
             </div>
 
             {/* Safe Data Display */}
-            {safeData && (
+            {safeInfo && (
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {/* Safe Details */}
                 <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
@@ -114,20 +118,26 @@ export default function SafeRealDemoPage() {
                   <div className="space-y-3">
                     <div>
                       <span className="text-slate-400 text-sm">Address</span>
-                      <div className="font-mono text-sm bg-slate-900 p-2 rounded mt-1">
-                        {safeData.address}
+                      <div className="font-mono text-sm bg-slate-900 p-2 rounded mt-1 break-all">
+                        {safeInfo.address}
                       </div>
                     </div>
                     <div>
                       <span className="text-slate-400 text-sm">Balance</span>
                       <div className="text-2xl font-bold text-green-400 mt-1">
-                        {safeData.balance}
+                        {safeInfo.balance}
                       </div>
                     </div>
                     <div>
                       <span className="text-slate-400 text-sm">Signature Threshold</span>
                       <div className="text-lg font-bold mt-1">
-                        {safeData.threshold} of {safeData.owners.length} required
+                        {safeInfo.threshold} of {safeInfo.owners.length} required
+                      </div>
+                    </div>
+                    <div>
+                      <span className="text-slate-400 text-sm">Nonce</span>
+                      <div className="text-lg font-bold mt-1">
+                        {safeInfo.nonce}
                       </div>
                     </div>
                   </div>
@@ -137,19 +147,18 @@ export default function SafeRealDemoPage() {
                 <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
                   <h2 className="text-xl font-bold mb-4">👥 Owners</h2>
                   <div className="space-y-3">
-                    {safeData.owners.map((owner: any, i: number) => (
+                    {safeInfo.owners.map((ownerAddress: string, i: number) => (
                       <div
                         key={i}
                         className="flex items-center justify-between bg-slate-900 p-3 rounded"
                       >
-                        <div>
-                          <div className="font-medium">{owner.name}</div>
-                          <div className="text-sm text-slate-400 font-mono">
-                            {owner.address}
+                        <div className="flex-1 min-w-0">
+                          <div className="text-sm text-slate-400 font-mono truncate">
+                            {ownerAddress}
                           </div>
                         </div>
-                        {owner.address === address && (
-                          <span className="text-blue-400 text-sm font-medium">You</span>
+                        {ownerAddress.toLowerCase() === address?.toLowerCase() && (
+                          <span className="text-blue-400 text-sm font-medium ml-2">You</span>
                         )}
                       </div>
                     ))}
@@ -158,25 +167,39 @@ export default function SafeRealDemoPage() {
 
                 {/* Create Workflow */}
                 <div className="lg:col-span-2 bg-slate-800 rounded-lg p-6 border border-slate-700">
-                  <h2 className="text-xl font-bold mb-4">Step 3: Create Workflow</h2>
+                  <h2 className="text-xl font-bold mb-4">Step 3: Propose Transaction</h2>
                   <div className="bg-blue-900/20 border border-blue-700/50 rounded-lg p-6">
                     <p className="text-blue-300 mb-4">
-                      Ready to create a workflow with this Safe account!
+                      Ready to propose a transaction with this Safe account!
                     </p>
                     <div className="space-y-2 text-sm text-slate-300 mb-4">
-                      <p>• Workflow will require {safeData.threshold} approvals</p>
-                      <p>• Transactions will be proposed to the Safe</p>
-                      <p>• You can approve using the Safe web app</p>
+                      <p>• Transaction will require {safeInfo.threshold} approvals</p>
+                      <p>• Proposal will be sent to Safe Transaction Service</p>
+                      <p>• Other owners can approve in the Safe web app</p>
                     </div>
-                    <div className="flex gap-3">
+                    
+                    {proposalResult && (
+                      <div className="mb-4 p-3 bg-green-900/20 border border-green-700/50 rounded">
+                        <p className="text-green-300 text-sm">{proposalResult}</p>
+                      </div>
+                    )}
+                    
+                    <div className="flex gap-3 flex-wrap">
+                      <button
+                        onClick={handleProposeWorkflow}
+                        disabled={proposing}
+                        className="px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-600 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors"
+                      >
+                        {proposing ? 'Proposing...' : 'Propose Test Transaction'}
+                      </button>
                       <a
-                        href={`/builder?safe=${safeData.address}`}
-                        className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors inline-block"
+                        href={`/builder?safe=${safeInfo.address}`}
+                        className="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition-colors inline-block"
                       >
                         Create Workflow
                       </a>
                       <a
-                        href={`https://app.safe.global/home?safe=eth:${safeData.address}`}
+                        href={`https://app.safe.global/home?safe=eth:${safeInfo.address}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="px-6 py-3 bg-slate-700 hover:bg-slate-600 text-white rounded-lg font-medium transition-colors inline-block"
