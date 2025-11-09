@@ -1,6 +1,8 @@
 'use client';
 
 import { useState } from 'react';
+import { usePriceOracle } from '@/hooks/usePriceOracle';
+import { formatPrice, formatPriceChange } from '@/lib/price-oracle';
 
 type ConditionType = 'PRICE_THRESHOLD' | 'GAS_THRESHOLD' | 'TIME_BASED' | 'COMPOSITE_AND' | 'COMPOSITE_OR';
 type ActionType = 'CROSS_CHAIN_SWAP' | 'NOTIFICATION' | 'WEBHOOK' | 'MULTI_STEP';
@@ -16,6 +18,9 @@ export default function WorkflowBuilder() {
   const [token, setToken] = useState('ETH');
   const [comparison, setComparison] = useState<'above' | 'below'>('below');
   const [threshold, setThreshold] = useState('3000');
+
+  // Fetch live prices
+  const { prices, loading: pricesLoading } = usePriceOracle(['ETH', 'BTC', 'USDT', 'USDC', 'SOL', 'MATIC']);
 
   // Gas condition state
   const [gasNetwork, setGasNetwork] = useState('ethereum');
@@ -204,17 +209,48 @@ export default function WorkflowBuilder() {
 
                 {conditionType === 'PRICE_THRESHOLD' && (
                   <>
+                    {/* Live Price Display */}
+                    {!pricesLoading && prices[token] && (
+                      <div className="p-4 bg-slate-900/50 border border-slate-700 rounded-lg">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-slate-400 text-sm">Current {token} Price</p>
+                            <p className="text-white text-2xl font-bold mt-1">
+                              {formatPrice(prices[token].price)}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-slate-400 text-sm">24h Change</p>
+                            <p className={`text-lg font-semibold mt-1 ${
+                              prices[token].change24h >= 0 ? 'text-green-400' : 'text-red-400'
+                            }`}>
+                              {formatPriceChange(prices[token].change24h).text}
+                            </p>
+                          </div>
+                        </div>
+                        <p className="text-xs text-slate-500 mt-2">
+                          Live data • Updates every 60s
+                        </p>
+                      </div>
+                    )}
+
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-medium text-slate-300 mb-2">
                           Token
                         </label>
-                        <input
-                          type="text"
+                        <select
                           value={token}
                           onChange={(e) => setToken(e.target.value)}
                           className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-blue-500"
-                        />
+                        >
+                          <option value="ETH">ETH</option>
+                          <option value="BTC">BTC</option>
+                          <option value="USDT">USDT</option>
+                          <option value="USDC">USDC</option>
+                          <option value="SOL">SOL</option>
+                          <option value="MATIC">MATIC</option>
+                        </select>
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-slate-300 mb-2">
@@ -240,6 +276,12 @@ export default function WorkflowBuilder() {
                         onChange={(e) => setThreshold(e.target.value)}
                         className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-blue-500"
                       />
+                      {prices[token] && (
+                        <p className="text-xs text-slate-400 mt-2">
+                          Current price: {formatPrice(prices[token].price)} • 
+                          Trigger when {comparison} ${threshold}
+                        </p>
+                      )}
                     </div>
                   </>
                 )}
