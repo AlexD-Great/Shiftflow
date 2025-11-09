@@ -49,32 +49,9 @@ export default function Dashboard() {
     setWorkflows(executor.getWorkflows());
   };
 
-  const [executions, setExecutions] = useState<Execution[]>([
-    {
-      id: 'ex_1',
-      workflowId: 'wf_1',
-      status: 'completed',
-      startedAt: new Date(Date.now() - 3600000),
-      completedAt: new Date(Date.now() - 3540000),
-    },
-    {
-      id: 'ex_2',
-      workflowId: 'wf_2',
-      status: 'executing',
-      startedAt: new Date(Date.now() - 120000),
-    },
-    {
-      id: 'ex_3',
-      workflowId: 'wf_1',
-      status: 'completed',
-      startedAt: new Date(Date.now() - 7200000),
-      completedAt: new Date(Date.now() - 7140000),
-    },
-  ]);
-
   const [currentTime, setCurrentTime] = useState(new Date());
 
-  // Simulate real-time updates
+  // Update current time
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentTime(new Date());
@@ -239,56 +216,10 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Recent Executions */}
+          {/* Live Activity */}
           <div>
-            <h2 className="text-2xl font-semibold text-white mb-4">Recent Executions</h2>
-
-            <div className="space-y-4">
-              {executions.map((execution) => {
-                const workflow = workflows.find(w => w.id === execution.workflowId);
-                
-                return (
-                  <div
-                    key={execution.id}
-                    className="bg-slate-800 p-6 rounded-lg border border-slate-700"
-                  >
-                    <div className="flex items-start justify-between mb-3">
-                      <div>
-                        <h3 className="text-white font-medium">{workflow?.name}</h3>
-                        <p className="text-sm text-slate-400 mt-1">
-                          Started {formatTimeAgo(execution.startedAt)}
-                        </p>
-                      </div>
-                      <span className={`px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(execution.status)}`}>
-                        {execution.status}
-                      </span>
-                    </div>
-
-                    {execution.status === 'executing' && (
-                      <div className="mt-4">
-                        <div className="flex items-center justify-between text-sm text-slate-400 mb-2">
-                          <span>Progress</span>
-                          <span>Step 2/3</span>
-                        </div>
-                        <div className="w-full bg-slate-700 rounded-full h-2">
-                          <div className="bg-blue-500 h-2 rounded-full animate-pulse" style={{ width: '66%' }}></div>
-                        </div>
-                      </div>
-                    )}
-
-                    {execution.completedAt && (
-                      <div className="mt-3 text-sm text-slate-400">
-                        Completed in {Math.floor((execution.completedAt.getTime() - execution.startedAt.getTime()) / 1000)}s
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* Live Activity */}
-            <div className="mt-6 bg-slate-800 p-6 rounded-lg border border-slate-700">
-              <h3 className="text-lg font-semibold text-white mb-4">Live Activity</h3>
+            <h2 className="text-2xl font-semibold text-white mb-4">Live Activity</h2>
+            <div className="bg-slate-800 p-6 rounded-lg border border-slate-700">
               <div className="space-y-3">
                 <div className="flex items-center gap-3 text-sm">
                   <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
