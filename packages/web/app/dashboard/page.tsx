@@ -55,26 +55,19 @@ export default function Dashboard() {
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentTime(new Date());
-      
-      // Simulate workflow checks
-      setWorkflows(prev => prev.map(wf => ({
-        ...wf,
-        lastCheckedAt: wf.status === 'active' ? new Date() : wf.lastCheckedAt,
-      })));
     }, 5000);
 
     return () => clearInterval(interval);
   }, []);
 
-  const getStatusColor = (status: WorkflowStatus | ExecutionStatus) => {
+  const getStatusColor = (status: string) => {
     switch (status) {
-      case 'active':
-      case 'executing':
-        return 'text-green-400 bg-green-900/20 border-green-700';
-      case 'completed':
-        return 'text-blue-400 bg-blue-900/20 border-blue-700';
-      case 'paused':
+      case 'pending':
         return 'text-yellow-400 bg-yellow-900/20 border-yellow-700';
+      case 'proposed':
+        return 'text-blue-400 bg-blue-900/20 border-blue-700';
+      case 'executed':
+        return 'text-green-400 bg-green-900/20 border-green-700';
       case 'failed':
         return 'text-red-400 bg-red-900/20 border-red-700';
       default:
@@ -201,15 +194,12 @@ export default function Dashboard() {
                     <button className="px-3 py-1 bg-slate-700 hover:bg-slate-600 text-white rounded text-sm transition-colors">
                       View Details
                     </button>
-                    {workflow.status === 'active' ? (
-                      <button className="px-3 py-1 bg-yellow-600 hover:bg-yellow-700 text-white rounded text-sm transition-colors">
-                        Pause
-                      </button>
-                    ) : (
-                      <button className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white rounded text-sm transition-colors">
-                        Resume
-                      </button>
-                    )}
+                    <button 
+                      onClick={() => handleRemoveWorkflow(workflow.id)}
+                      className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded text-sm transition-colors"
+                    >
+                      Remove
+                    </button>
                   </div>
                 </div>
               ))}
