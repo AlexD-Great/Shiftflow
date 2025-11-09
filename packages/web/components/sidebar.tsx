@@ -48,6 +48,12 @@ const navItems: NavItem[] = [
     icon: '🔌',
     description: 'Connect your wallet'
   },
+  {
+    name: 'API Test',
+    href: '/api-test',
+    icon: '🧪',
+    description: 'Live API integrations'
+  },
 ]
 
 const externalLinks = [
