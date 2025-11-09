@@ -4,6 +4,10 @@ import { useState, useEffect } from 'react';
 import { getExecutor } from '@/lib/workflow-executor';
 import { getSafeWorkflowStatusMessage } from '@/lib/safe-workflow';
 
+/**
+ * Dashboard - Real-time workflow monitoring
+ * Shows live workflow execution status and statistics
+ */
 export default function Dashboard() {
   const [workflows, setWorkflows] = useState<any[]>([]);
   const [executorStats, setExecutorStats] = useState<any>(null);
