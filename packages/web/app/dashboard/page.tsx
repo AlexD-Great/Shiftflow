@@ -1,52 +1,53 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-
-type WorkflowStatus = 'active' | 'paused' | 'completed' | 'failed';
-type ExecutionStatus = 'pending' | 'executing' | 'completed' | 'failed';
-
-interface Workflow {
-  id: string;
-  name: string;
-  status: WorkflowStatus;
-  lastCheckedAt?: Date;
-  executionCount: number;
-  safeAddress?: string;
-}
-
-interface Execution {
-  id: string;
-  workflowId: string;
-  status: ExecutionStatus;
-  startedAt: Date;
-  completedAt?: Date;
-}
+import { getExecutor } from '@/lib/workflow-executor';
+import { getSafeWorkflowStatusMessage } from '@/lib/safe-workflow';
 
 export default function Dashboard() {
-  const [workflows, setWorkflows] = useState<Workflow[]>([
-    {
-      id: 'wf_1',
-      name: 'DeFi Sniper (ETH → BTC)',
-      status: 'active',
-      lastCheckedAt: new Date(),
-      executionCount: 3,
-    },
-    {
-      id: 'wf_2',
-      name: 'Treasury Rebalance',
-      status: 'active',
-      lastCheckedAt: new Date(Date.now() - 60000),
-      executionCount: 12,
-      safeAddress: '0x1234...5678',
-    },
-    {
-      id: 'wf_3',
-      name: 'Gas Optimizer',
-      status: 'paused',
-      lastCheckedAt: new Date(Date.now() - 300000),
-      executionCount: 45,
-    },
-  ]);
+  const [workflows, setWorkflows] = useState<any[]>([]);
+  const [executorStats, setExecutorStats] = useState<any>(null);
+  const [isMonitoring, setIsMonitoring] = useState(false);
+
+  // Load workflows from executor
+  useEffect(() => {
+    const executor = getExecutor();
+    const loadedWorkflows = executor.getWorkflows();
+    const stats = executor.getStats();
+    
+    setWorkflows(loadedWorkflows);
+    setExecutorStats(stats);
+    setIsMonitoring(stats.isRunning);
+
+    // Refresh every 5 seconds
+    const interval = setInterval(() => {
+      const updatedWorkflows = executor.getWorkflows();
+      const updatedStats = executor.getStats();
+      setWorkflows(updatedWorkflows);
+      setExecutorStats(updatedStats);
+      setIsMonitoring(updatedStats.isRunning);
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  const handleStartMonitoring = () => {
+    const executor = getExecutor();
+    executor.start();
+    setIsMonitoring(true);
+  };
+
+  const handleStopMonitoring = () => {
+    const executor = getExecutor();
+    executor.stop();
+    setIsMonitoring(false);
+  };
+
+  const handleRemoveWorkflow = (workflowId: string) => {
+    const executor = getExecutor();
+    executor.removeWorkflow(workflowId);
+    setWorkflows(executor.getWorkflows());
+  };
 
   const [executions, setExecutions] = useState<Execution[]>([
     {
@@ -113,39 +114,53 @@ export default function Dashboard() {
     return `${Math.floor(seconds / 86400)}d ago`;
   };
 
-  const activeWorkflows = workflows.filter(w => w.status === 'active').length;
-  const totalExecutions = workflows.reduce((sum, w) => sum + w.executionCount, 0);
-  const recentExecutions = executions.filter(e => 
-    e.startedAt.getTime() > Date.now() - 86400000
-  ).length;
-
   return (
     <main className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-white mb-2">Dashboard</h1>
-          <p className="text-slate-400">Monitor your automated workflows in real-time</p>
+        <div className="mb-8 flex items-center justify-between">
+          <div>
+            <h1 className="text-4xl font-bold text-white mb-2">Dashboard</h1>
+            <p className="text-slate-400">Monitor your automated workflows in real-time</p>
+          </div>
+          <div className="flex gap-3">
+            {isMonitoring ? (
+              <button
+                onClick={handleStopMonitoring}
+                className="px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors flex items-center gap-2"
+              >
+                <span className="w-2 h-2 bg-white rounded-full animate-pulse"></span>
+                Stop Monitoring
+              </button>
+            ) : (
+              <button
+                onClick={handleStartMonitoring}
+                className="px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors"
+              >
+                Start Monitoring
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Stats */}
         <div className="grid md:grid-cols-4 gap-6 mb-8">
           <div className="bg-slate-800 p-6 rounded-lg border border-slate-700">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-slate-400 text-sm">Active Workflows</span>
-              <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+              <span className="text-slate-400 text-sm">Total Workflows</span>
+              <span className={`w-2 h-2 rounded-full ${isMonitoring ? 'bg-green-400 animate-pulse' : 'bg-slate-600'}`}></span>
             </div>
-            <div className="text-3xl font-bold text-white">{activeWorkflows}</div>
+            <div className="text-3xl font-bold text-white">{executorStats?.total || 0}</div>
           </div>
 
           <div className="bg-slate-800 p-6 rounded-lg border border-slate-700">
-            <div className="text-slate-400 text-sm mb-2">Total Executions</div>
-            <div className="text-3xl font-bold text-white">{totalExecutions}</div>
+            <div className="text-slate-400 text-sm mb-2">Pending</div>
+            <div className="text-3xl font-bold text-yellow-400">{executorStats?.pending || 0}</div>
           </div>
 
           <div className="bg-slate-800 p-6 rounded-lg border border-slate-700">
-            <div className="text-slate-400 text-sm mb-2">Last 24h</div>
-            <div className="text-3xl font-bold text-white">{recentExecutions}</div>
+            <div className="text-slate-400 text-sm mb-2">Executed</div>
+            <div className="text-3xl font-bold text-green-400">{executorStats?.executed || 0}</div>
           </div>
 
           <div className="bg-slate-800 p-6 rounded-lg border border-slate-700">
