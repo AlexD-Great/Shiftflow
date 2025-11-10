@@ -1,0 +1,25 @@
+<svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Circular flow arrows -->
+  <defs>
+    <linearGradient id="gradient1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#3B82F6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#8B5CF6;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Outer circle -->
+  <circle cx="100" cy="100" r="90" stroke="url(#gradient1)" stroke-width="4" fill="none" opacity="0.3"/>
+  
+  <!-- Flow arrow 1 (top-right to bottom-left) -->
+  <path d="M 140 60 Q 160 80, 140 100 Q 120 120, 100 140 L 95 135 L 105 130 L 100 140 L 110 135 L 105 130" 
+        stroke="url(#gradient1)" stroke-width="6" fill="none" stroke-linecap="round"/>
+  <path d="M 100 140 L 95 135 L 105 130 Z" fill="url(#gradient1)"/>
+  
+  <!-- Flow arrow 2 (bottom-left to top-right) -->
+  <path d="M 60 140 Q 40 120, 60 100 Q 80 80, 100 60 L 95 65 L 105 70 L 100 60 L 90 65 L 95 70" 
+        stroke="url(#gradient1)" stroke-width="6" fill="none" stroke-linecap="round"/>
+  <path d="M 100 60 L 95 65 L 105 70 Z" fill="url(#gradient1)"/>
+  
+  <!-- Center dot -->
+  <circle cx="100" cy="100" r="8" fill="url(#gradient1)"/>
+</svg>

@@ -1,0 +1,24 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="iconGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#3B82F6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#8B5CF6;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Simplified flow arrows for small icon -->
+  <circle cx="32" cy="32" r="28" stroke="url(#iconGradient)" stroke-width="3" fill="none" opacity="0.3"/>
+  
+  <!-- Arrow 1 -->
+  <path d="M 45 20 Q 50 25, 45 32 Q 40 39, 32 45" 
+        stroke="url(#iconGradient)" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <path d="M 32 45 L 29 42 L 35 40 Z" fill="url(#iconGradient)"/>
+  
+  <!-- Arrow 2 -->
+  <path d="M 19 45 Q 14 40, 19 32 Q 24 25, 32 19" 
+        stroke="url(#iconGradient)" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <path d="M 32 19 L 29 22 L 35 24 Z" fill="url(#iconGradient)"/>
+  
+  <!-- Center -->
+  <circle cx="32" cy="32" r="4" fill="url(#iconGradient)"/>
+</svg>

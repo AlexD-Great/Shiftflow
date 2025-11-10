@@ -1,11 +1,19 @@
-# ShiftFlow ⚡
+<div align="center">
+  <img src="./public/logo-full.svg" alt="ShiftFlow Logo" width="400"/>
+  
+  <h3>Smart Automation for Cross-Chain DeFi</h3>
+  <p>Stop watching charts. Let ShiftFlow execute your strategy when conditions are right.</p>
 
-> **Smart Automation for Cross-Chain DeFi**  
-> Stop watching charts. Let ShiftFlow execute your strategy when conditions are right.
+  <p>
+    <a href="https://shiftflow-web.vercel.app/"><strong>🚀 Live Demo</strong></a> •
+    <a href="https://youtu.be/lzGnVPZsk0o"><strong>📺 Demo Video</strong></a> •
+    <a href="https://github.com/AlexD-Great/Shiftflow"><strong>💻 GitHub</strong></a>
+  </p>
 
-**🚀 Live Demo:** [shiftflow-web.vercel.app](https://shiftflow-web.vercel.app/)  
-**📺 Demo Video:** [Coming Soon]  
-**🏆 Built for:** SideShift Hackathon 2024
+  <p>
+    <strong>🏆 Built for SideShift Hackathon 2024</strong>
+  </p>
+</div>
 
 ---
 

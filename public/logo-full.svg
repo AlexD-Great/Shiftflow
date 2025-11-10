@@ -1,0 +1,26 @@
+<svg width="400" height="100" viewBox="0 0 400 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="fullGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#3B82F6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#8B5CF6;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Icon part -->
+  <circle cx="50" cy="50" r="35" stroke="url(#fullGradient)" stroke-width="3" fill="none" opacity="0.3"/>
+  
+  <path d="M 65 30 Q 72 37, 65 50 Q 58 63, 50 70" 
+        stroke="url(#fullGradient)" stroke-width="5" fill="none" stroke-linecap="round"/>
+  <path d="M 50 70 L 46 66 L 54 64 Z" fill="url(#fullGradient)"/>
+  
+  <path d="M 35 70 Q 28 63, 35 50 Q 42 37, 50 30" 
+        stroke="url(#fullGradient)" stroke-width="5" fill="none" stroke-linecap="round"/>
+  <path d="M 50 30 L 46 34 L 54 36 Z" fill="url(#fullGradient)"/>
+  
+  <circle cx="50" cy="50" r="5" fill="url(#fullGradient)"/>
+  
+  <!-- Text: ShiftFlow -->
+  <text x="110" y="60" font-family="Arial, sans-serif" font-size="36" font-weight="700" fill="url(#fullGradient)">
+    ShiftFlow
+  </text>
+</svg>
