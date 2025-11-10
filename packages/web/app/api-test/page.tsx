@@ -24,10 +24,16 @@ export default function APITestPage() {
   const { loading: shiftLoading, error: shiftError, getQuote, getShiftStatus } = useSideShift();
 
   const handleGetQuote = async () => {
+    // Validate inputs
+    if (!quoteParams.depositCoin || !quoteParams.settleCoin || !quoteParams.depositAmount) {
+      alert('Please fill in all fields');
+      return;
+    }
+    
     const result = await getQuote(
-      quoteParams.depositCoin,
-      quoteParams.settleCoin,
-      quoteParams.depositAmount
+      quoteParams.depositCoin.trim().toLowerCase(),
+      quoteParams.settleCoin.trim().toLowerCase(),
+      quoteParams.depositAmount.trim()
     );
     setQuote(result);
   };
@@ -123,6 +129,7 @@ export default function APITestPage() {
                     className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-blue-500"
                     placeholder="eth"
                   />
+                  <p className="text-xs text-slate-500 mt-1">Examples: eth, btc, usdt, sol</p>
                 </div>
 
                 <div>
@@ -134,6 +141,7 @@ export default function APITestPage() {
                     className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-blue-500"
                     placeholder="btc"
                   />
+                  <p className="text-xs text-slate-500 mt-1">Examples: btc, eth, usdc, matic</p>
                 </div>
 
                 <div>
@@ -145,6 +153,7 @@ export default function APITestPage() {
                     className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-blue-500"
                     placeholder="1"
                   />
+                  <p className="text-xs text-slate-500 mt-1">Amount to swap (e.g., 1, 0.5, 100)</p>
                 </div>
 
                 <button
