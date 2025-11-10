@@ -13,6 +13,8 @@ export default function WorkflowBuilder() {
   const [actionType, setActionType] = useState<ActionType>('CROSS_CHAIN_SWAP');
   const [useSafe, setUseSafe] = useState(false);
   const [safeAddress, setSafeAddress] = useState('');
+  const [deployStatus, setDeployStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [statusMessage, setStatusMessage] = useState('');
 
   // Price condition state
   const [token, setToken] = useState('ETH');
@@ -76,6 +78,58 @@ export default function WorkflowBuilder() {
     };
 
     return JSON.stringify(workflow, null, 2);
+  };
+
+  const handleDeploy = () => {
+    // Validate required fields
+    if (!workflowName.trim()) {
+      setDeployStatus('error');
+      setStatusMessage('Please enter a workflow name');
+      setTimeout(() => setDeployStatus('idle'), 3000);
+      return;
+    }
+
+    if (!settleAddress.trim()) {
+      setDeployStatus('error');
+      setStatusMessage('Please enter a settle address for the swap');
+      setTimeout(() => setDeployStatus('idle'), 3000);
+      return;
+    }
+
+    if (useSafe && !safeAddress.trim()) {
+      setDeployStatus('error');
+      setStatusMessage('Please enter your Safe address');
+      setTimeout(() => setDeployStatus('idle'), 3000);
+      return;
+    }
+
+    // Simulate deployment (in production, this would call an API)
+    setDeployStatus('success');
+    setStatusMessage('Workflow deployed successfully! You can monitor it in the Dashboard.');
+    
+    // Reset after 5 seconds
+    setTimeout(() => {
+      setDeployStatus('idle');
+      setStatusMessage('');
+    }, 5000);
+  };
+
+  const handleSaveDraft = () => {
+    if (!workflowName.trim()) {
+      setDeployStatus('error');
+      setStatusMessage('Please enter a workflow name to save');
+      setTimeout(() => setDeployStatus('idle'), 3000);
+      return;
+    }
+
+    // Simulate saving (in production, this would save to local storage or API)
+    setDeployStatus('success');
+    setStatusMessage('Workflow saved as draft! You can edit it later.');
+    
+    setTimeout(() => {
+      setDeployStatus('idle');
+      setStatusMessage('');
+    }, 5000);
   };
 
   return (
@@ -413,13 +467,35 @@ export default function WorkflowBuilder() {
               </div>
 
               <div className="space-y-2">
-                <button className="w-full px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors">
+                <button 
+                  onClick={handleDeploy}
+                  className="w-full px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+                >
                   Deploy Workflow
                 </button>
-                <button className="w-full px-4 py-3 bg-slate-700 hover:bg-slate-600 text-white rounded-lg font-medium transition-colors">
+                <button 
+                  onClick={handleSaveDraft}
+                  className="w-full px-4 py-3 bg-slate-700 hover:bg-slate-600 text-white rounded-lg font-medium transition-colors"
+                >
                   Save as Draft
                 </button>
               </div>
+
+              {/* Status Message */}
+              {deployStatus !== 'idle' && (
+                <div className={`mt-4 p-4 rounded-lg ${
+                  deployStatus === 'success' 
+                    ? 'bg-green-900/20 border border-green-700' 
+                    : 'bg-red-900/20 border border-red-700'
+                }`}>
+                  <p className={`text-sm ${
+                    deployStatus === 'success' ? 'text-green-300' : 'text-red-300'
+                  }`}>
+                    {deployStatus === 'success' ? '✅ ' : '❌ '}
+                    {statusMessage}
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* Features */}
