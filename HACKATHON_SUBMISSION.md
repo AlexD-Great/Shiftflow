@@ -179,4 +179,4 @@ The demo monitors ETH price and will execute a swap when it drops below $3000.
 
 ---
 
-Built for SideShift Wave Hack - Wave 2
+Built for SideShift Wave Hack 
