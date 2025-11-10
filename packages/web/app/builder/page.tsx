@@ -3,11 +3,14 @@
 import { useState } from 'react';
 import { usePriceOracle } from '@/hooks/usePriceOracle';
 import { formatPrice, formatPriceChange } from '@/lib/price-oracle';
+import { getExecutor } from '@/lib/workflow-executor';
+import { useRouter } from 'next/navigation';
 
 type ConditionType = 'PRICE_THRESHOLD' | 'GAS_THRESHOLD' | 'TIME_BASED' | 'COMPOSITE_AND' | 'COMPOSITE_OR';
 type ActionType = 'CROSS_CHAIN_SWAP' | 'NOTIFICATION' | 'WEBHOOK' | 'MULTI_STEP';
 
 export default function WorkflowBuilder() {
+  const router = useRouter();
   const [workflowName, setWorkflowName] = useState('');
   const [conditionType, setConditionType] = useState<ConditionType>('PRICE_THRESHOLD');
   const [actionType, setActionType] = useState<ActionType>('CROSS_CHAIN_SWAP');
@@ -103,15 +106,64 @@ export default function WorkflowBuilder() {
       return;
     }
 
-    // Simulate deployment (in production, this would call an API)
-    setDeployStatus('success');
-    setStatusMessage('Workflow deployed successfully! You can monitor it in the Dashboard.');
-    
-    // Reset after 5 seconds
-    setTimeout(() => {
-      setDeployStatus('idle');
-      setStatusMessage('');
-    }, 5000);
+    try {
+      // Create workflow object
+      const workflow = {
+        id: `workflow_${Date.now()}`,
+        name: workflowName || 'Untitled Workflow',
+        description: `Auto-generated workflow`,
+        userId: 'demo_user',
+        condition: {
+          type: conditionType,
+          ...(conditionType === 'PRICE_THRESHOLD' && {
+            token,
+            comparison,
+            threshold: parseFloat(threshold),
+            currency: 'USD',
+          }),
+          ...(conditionType === 'GAS_THRESHOLD' && {
+            network: gasNetwork,
+            comparison: gasComparison,
+            threshold: parseFloat(gasThreshold),
+          }),
+        },
+        actions: [
+          {
+            type: actionType,
+            ...(actionType === 'CROSS_CHAIN_SWAP' && {
+              depositCoin,
+              depositNetwork,
+              settleCoin,
+              settleNetwork,
+              amount: parseFloat(amount),
+              settleAddress,
+            }),
+          },
+        ],
+        status: 'active',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        executionCount: 0,
+        ...(useSafe && { safeAddress, requiresApproval: true }),
+      };
+
+      // Add workflow to executor
+      const executor = getExecutor();
+      executor.addWorkflow(workflow as any);
+
+      // Show success message
+      setDeployStatus('success');
+      setStatusMessage('Workflow deployed successfully! Redirecting to Dashboard...');
+      
+      // Redirect to dashboard after 2 seconds
+      setTimeout(() => {
+        router.push('/dashboard');
+      }, 2000);
+    } catch (error) {
+      setDeployStatus('error');
+      setStatusMessage('Failed to deploy workflow. Please try again.');
+      setTimeout(() => setDeployStatus('idle'), 3000);
+    }
   };
 
   const handleSaveDraft = () => {
