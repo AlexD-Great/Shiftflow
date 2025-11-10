@@ -103,8 +103,8 @@ export class SideShiftAPI {
     settleNetwork?: string
   }): Promise<SideShiftQuote> {
     const body: any = {
-      depositMethod: params.depositCoin,
-      settleMethod: params.settleCoin,
+      depositCoin: params.depositCoin,
+      settleCoin: params.settleCoin,
     }
 
     if (params.depositNetwork) body.depositNetwork = params.depositNetwork
@@ -133,8 +133,8 @@ export class SideShiftAPI {
    */
   async createFixedShift(params: CreateShiftParams): Promise<SideShiftOrder> {
     const body: any = {
-      depositMethod: params.depositCoin,
-      settleMethod: params.settleCoin,
+      depositCoin: params.depositCoin,
+      settleCoin: params.settleCoin,
       settleAddress: params.settleAddress,
     }
 
