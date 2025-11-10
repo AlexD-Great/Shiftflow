@@ -73,3 +73,9 @@ pids
 
 # Optional eslint cache
 .eslintcache
+
+# Personal/Testing files (do not commit)
+PERSONAL_TESTING_GUIDE.md
+TESTING.md
+*_PERSONAL.md
+*_TEST.md
