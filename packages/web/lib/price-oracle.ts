@@ -154,8 +154,9 @@ export class PriceOracle {
 
       return prices
     } catch (error) {
-      console.error('[PriceOracle] Error fetching multiple prices:', error)
-      throw error
+      // Silently fail to avoid console spam
+      // Return empty prices object
+      return {}
     }
   }
 

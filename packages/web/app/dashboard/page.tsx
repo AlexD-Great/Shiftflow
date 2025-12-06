@@ -1,56 +1,106 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { getExecutor } from '@/lib/workflow-executor';
-import { getSafeWorkflowStatusMessage } from '@/lib/safe-workflow';
+import { useSession } from 'next-auth/react';
 
 /**
  * Dashboard - Real-time workflow monitoring
  * Shows live workflow execution status and statistics
  */
 export default function Dashboard() {
+  const { data: session } = useSession();
   const [workflows, setWorkflows] = useState<any[]>([]);
-  const [executorStats, setExecutorStats] = useState<any>(null);
-  const [isMonitoring, setIsMonitoring] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Load workflows from executor
+  // Load workflows from database API
+  const fetchWorkflows = async () => {
+    try {
+      const response = await fetch('/api/workflows');
+      if (!response.ok) {
+        throw new Error('Failed to fetch workflows');
+      }
+      const data = await response.json();
+      setWorkflows(data.workflows || []);
+      setError(null);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const executor = getExecutor();
-    const loadedWorkflows = executor.getWorkflows();
-    const stats = executor.getStats();
-    
-    setWorkflows(loadedWorkflows);
-    setExecutorStats(stats);
-    setIsMonitoring(stats.isRunning);
+    if (session) {
+      fetchWorkflows();
+      
+      // Refresh every 10 seconds
+      const interval = setInterval(fetchWorkflows, 10000);
+      return () => clearInterval(interval);
+    }
+  }, [session]);
 
-    // Refresh every 5 seconds
-    const interval = setInterval(() => {
-      const updatedWorkflows = executor.getWorkflows();
-      const updatedStats = executor.getStats();
-      setWorkflows(updatedWorkflows);
-      setExecutorStats(updatedStats);
-      setIsMonitoring(updatedStats.isRunning);
-    }, 5000);
+  const handleDeleteWorkflow = async (workflowId: string) => {
+    if (!confirm('Are you sure you want to delete this workflow?')) {
+      return;
+    }
 
-    return () => clearInterval(interval);
-  }, []);
+    try {
+      const response = await fetch(`/api/workflows/${workflowId}`, {
+        method: 'DELETE',
+      });
 
-  const handleStartMonitoring = () => {
-    const executor = getExecutor();
-    executor.start();
-    setIsMonitoring(true);
+      if (!response.ok) {
+        throw new Error('Failed to delete workflow');
+      }
+
+      // Refresh workflows
+      await fetchWorkflows();
+    } catch (err: any) {
+      alert(`Error: ${err.message}`);
+    }
   };
 
-  const handleStopMonitoring = () => {
-    const executor = getExecutor();
-    executor.stop();
-    setIsMonitoring(false);
+  const handleActivateWorkflow = async (workflowId: string) => {
+    try {
+      const response = await fetch(`/api/workflows/${workflowId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status: 'ACTIVE' }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to activate workflow');
+      }
+
+      // Refresh workflows
+      await fetchWorkflows();
+    } catch (err: any) {
+      alert(`Error: ${err.message}`);
+    }
   };
 
-  const handleRemoveWorkflow = (workflowId: string) => {
-    const executor = getExecutor();
-    executor.removeWorkflow(workflowId);
-    setWorkflows(executor.getWorkflows());
+  const handleDeactivateWorkflow = async (workflowId: string) => {
+    try {
+      const response = await fetch(`/api/workflows/${workflowId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status: 'DRAFT' }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to deactivate workflow');
+      }
+
+      // Refresh workflows
+      await fetchWorkflows();
+    } catch (err: any) {
+      alert(`Error: ${err.message}`);
+    }
   };
 
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -95,23 +145,24 @@ export default function Dashboard() {
         <div className="mb-8 flex items-center justify-between">
           <div>
             <h1 className="text-4xl font-bold text-white mb-2">Dashboard</h1>
-            <p className="text-slate-400">Monitor your automated workflows in real-time</p>
+            <p className="text-slate-400">Monitor your automated workflows</p>
           </div>
           <div className="flex gap-3">
-            {isMonitoring ? (
-              <button
-                onClick={handleStopMonitoring}
-                className="px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors flex items-center gap-2"
-              >
-                <span className="w-2 h-2 bg-white rounded-full animate-pulse"></span>
-                Stop Monitoring
-              </button>
+            {!session ? (
+              <div className="px-6 py-3 bg-slate-700 text-slate-400 rounded-lg">
+                Sign in to view workflows
+              </div>
+            ) : loading ? (
+              <div className="px-6 py-3 bg-slate-700 text-white rounded-lg flex items-center gap-2">
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                Loading...
+              </div>
             ) : (
               <button
-                onClick={handleStartMonitoring}
-                className="px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors"
+                onClick={fetchWorkflows}
+                className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
               >
-                Start Monitoring
+                Refresh
               </button>
             )}
           </div>
@@ -122,24 +173,30 @@ export default function Dashboard() {
           <div className="bg-slate-800 p-6 rounded-lg border border-slate-700">
             <div className="flex items-center justify-between mb-2">
               <span className="text-slate-400 text-sm">Total Workflows</span>
-              <span className={`w-2 h-2 rounded-full ${isMonitoring ? 'bg-green-400 animate-pulse' : 'bg-slate-600'}`}></span>
+              <span className="w-2 h-2 rounded-full bg-blue-400"></span>
             </div>
-            <div className="text-3xl font-bold text-white">{executorStats?.total || 0}</div>
+            <div className="text-3xl font-bold text-white">{workflows.length}</div>
           </div>
 
           <div className="bg-slate-800 p-6 rounded-lg border border-slate-700">
-            <div className="text-slate-400 text-sm mb-2">Pending</div>
-            <div className="text-3xl font-bold text-yellow-400">{executorStats?.pending || 0}</div>
+            <div className="text-slate-400 text-sm mb-2">Active</div>
+            <div className="text-3xl font-bold text-green-400">
+              {workflows.filter(w => w.status === 'ACTIVE').length}
+            </div>
           </div>
 
           <div className="bg-slate-800 p-6 rounded-lg border border-slate-700">
-            <div className="text-slate-400 text-sm mb-2">Executed</div>
-            <div className="text-3xl font-bold text-green-400">{executorStats?.executed || 0}</div>
+            <div className="text-slate-400 text-sm mb-2">Draft</div>
+            <div className="text-3xl font-bold text-yellow-400">
+              {workflows.filter(w => w.status === 'DRAFT').length}
+            </div>
           </div>
 
           <div className="bg-slate-800 p-6 rounded-lg border border-slate-700">
-            <div className="text-slate-400 text-sm mb-2">Success Rate</div>
-            <div className="text-3xl font-bold text-green-400">98.5%</div>
+            <div className="text-slate-400 text-sm mb-2">Total Executions</div>
+            <div className="text-3xl font-bold text-purple-400">
+              {workflows.reduce((sum, w) => sum + (w._count?.executions || 0), 0)}
+            </div>
           </div>
         </div>
 
@@ -157,80 +214,145 @@ export default function Dashboard() {
             </div>
 
             <div className="space-y-4">
-              {workflows.map((workflow) => (
-                <div
-                  key={workflow.id}
-                  className="bg-slate-800 p-6 rounded-lg border border-slate-700 hover:border-slate-600 transition-colors"
-                >
-                  <div className="flex items-start justify-between mb-3">
-                    <div>
-                      <h3 className="text-lg font-semibold text-white mb-1">
-                        {workflow.name}
-                      </h3>
-                      {workflow.safeAddress && (
-                        <div className="flex items-center gap-2 text-xs text-slate-400">
-                          <span className="px-2 py-1 bg-purple-900/20 border border-purple-700 rounded text-purple-400">
-                            Safe Multi-sig
-                          </span>
-                          <span className="font-mono">{workflow.safeAddress}</span>
-                        </div>
-                      )}
-                    </div>
-                    <span className={`px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(workflow.status)}`}>
-                      {workflow.status}
-                    </span>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <span className="text-slate-400">Executions:</span>
-                      <span className="text-white ml-2 font-medium">{workflow.executionCount}</span>
-                    </div>
-                    <div>
-                      <span className="text-slate-400">Last Check:</span>
-                      <span className="text-white ml-2 font-medium">
-                        {workflow.lastCheckedAt ? formatTimeAgo(workflow.lastCheckedAt) : 'Never'}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="mt-4 flex gap-2">
-                    <button className="px-3 py-1 bg-slate-700 hover:bg-slate-600 text-white rounded text-sm transition-colors">
-                      View Details
-                    </button>
-                    <button 
-                      onClick={() => handleRemoveWorkflow(workflow.id)}
-                      className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded text-sm transition-colors"
-                    >
-                      Remove
-                    </button>
+              {!session ? (
+                <div className="bg-slate-800 p-8 rounded-lg border border-slate-700 text-center">
+                  <p className="text-slate-400">Sign in to view your workflows</p>
+                </div>
+              ) : loading ? (
+                <div className="bg-slate-800 p-8 rounded-lg border border-slate-700 text-center">
+                  <div className="flex items-center justify-center gap-2">
+                    <div className="w-4 h-4 border-2 border-blue-400 border-t-transparent rounded-full animate-spin"></div>
+                    <span className="text-slate-400">Loading workflows...</span>
                   </div>
                 </div>
-              ))}
+              ) : workflows.length === 0 ? (
+                <div className="bg-slate-800 p-8 rounded-lg border border-slate-700 text-center">
+                  <p className="text-slate-400 mb-4">No workflows yet</p>
+                  <a
+                    href="/builder"
+                    className="inline-block px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors"
+                  >
+                    Create Your First Workflow
+                  </a>
+                </div>
+              ) : (
+                workflows.map((workflow) => (
+                  <div
+                    key={workflow.id}
+                    className={`bg-slate-800 p-6 rounded-lg border transition-colors ${
+                      workflow.status === 'ACTIVE' 
+                        ? 'border-green-700 hover:border-green-600' 
+                        : 'border-slate-700 hover:border-slate-600'
+                    }`}
+                  >
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <h3 className="text-lg font-semibold text-white">
+                            {workflow.name}
+                          </h3>
+                          {workflow.status === 'ACTIVE' && (
+                            <span className="flex items-center gap-1 text-xs text-green-400">
+                              <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+                              Monitoring
+                            </span>
+                          )}
+                        </div>
+                        {workflow.description && (
+                          <p className="text-sm text-slate-400">{workflow.description}</p>
+                        )}
+                        {workflow.safeAddress && (
+                          <div className="flex items-center gap-2 text-xs text-slate-400 mt-2">
+                            <span className="px-2 py-1 bg-purple-900/20 border border-purple-700 rounded text-purple-400">
+                              Safe Multi-sig
+                            </span>
+                            <span className="font-mono">{workflow.safeAddress.slice(0, 10)}...</span>
+                          </div>
+                        )}
+                      </div>
+                      <span className={`px-3 py-1 rounded-full text-xs font-medium border ${
+                        workflow.status === 'ACTIVE' ? 'text-green-400 bg-green-900/20 border-green-700' :
+                        workflow.status === 'DRAFT' ? 'text-yellow-400 bg-yellow-900/20 border-yellow-700' :
+                        'text-slate-400 bg-slate-900/20 border-slate-700'
+                      }`}>
+                        {workflow.status}
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4 text-sm mb-4">
+                      <div>
+                        <span className="text-slate-400">Executions:</span>
+                        <span className="text-white ml-2 font-medium">{workflow._count?.executions || 0}</span>
+                      </div>
+                      <div>
+                        <span className="text-slate-400">Created:</span>
+                        <span className="text-white ml-2 font-medium">
+                          {new Date(workflow.createdAt).toLocaleDateString()}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="mt-4 flex gap-2">
+                      {workflow.status === 'DRAFT' ? (
+                        <button 
+                          onClick={() => handleActivateWorkflow(workflow.id)}
+                          className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white rounded text-sm transition-colors"
+                        >
+                          Activate
+                        </button>
+                      ) : (
+                        <button 
+                          onClick={() => handleDeactivateWorkflow(workflow.id)}
+                          className="px-3 py-1 bg-yellow-600 hover:bg-yellow-700 text-white rounded text-sm transition-colors"
+                        >
+                          Deactivate
+                        </button>
+                      )}
+                      <button 
+                        onClick={() => handleDeleteWorkflow(workflow.id)}
+                        className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded text-sm transition-colors"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
 
-          {/* Live Activity */}
+          {/* Workflow Details */}
           <div>
-            <h2 className="text-2xl font-semibold text-white mb-4">Live Activity</h2>
+            <h2 className="text-2xl font-semibold text-white mb-4">Recent Activity</h2>
             <div className="bg-slate-800 p-6 rounded-lg border border-slate-700">
-              <div className="space-y-3">
-                <div className="flex items-center gap-3 text-sm">
-                  <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
-                  <span className="text-slate-300">Monitoring 3 workflows</span>
-                  <span className="text-slate-500 ml-auto">{currentTime.toLocaleTimeString()}</span>
+              {workflows.length === 0 ? (
+                <div className="text-center py-8">
+                  <p className="text-slate-400">No activity yet</p>
+                  <p className="text-slate-500 text-sm mt-2">Create a workflow to get started</p>
                 </div>
-                <div className="flex items-center gap-3 text-sm">
-                  <span className="w-2 h-2 bg-blue-400 rounded-full"></span>
-                  <span className="text-slate-300">Checking price oracles</span>
-                  <span className="text-slate-500 ml-auto">Every 30s</span>
+              ) : (
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3 text-sm">
+                    <span className="w-2 h-2 bg-blue-400 rounded-full"></span>
+                    <span className="text-slate-300">Total workflows: {workflows.length}</span>
+                    <span className="text-slate-500 ml-auto">{currentTime.toLocaleTimeString()}</span>
+                  </div>
+                  <div className="flex items-center gap-3 text-sm">
+                    <span className="w-2 h-2 bg-green-400 rounded-full"></span>
+                    <span className="text-slate-300">Active: {workflows.filter(w => w.status === 'ACTIVE').length}</span>
+                  </div>
+                  <div className="flex items-center gap-3 text-sm">
+                    <span className="w-2 h-2 bg-purple-400 rounded-full"></span>
+                    <span className="text-slate-300">Safe multi-sig: {workflows.filter(w => w.safeAddress).length}</span>
+                  </div>
+                  {error && (
+                    <div className="flex items-center gap-3 text-sm">
+                      <span className="w-2 h-2 bg-red-400 rounded-full"></span>
+                      <span className="text-red-300">Error: {error}</span>
+                    </div>
+                  )}
                 </div>
-                <div className="flex items-center gap-3 text-sm">
-                  <span className="w-2 h-2 bg-purple-400 rounded-full"></span>
-                  <span className="text-slate-300">Safe multi-sig ready</span>
-                  <span className="text-slate-500 ml-auto">1 workflow</span>
-                </div>
-              </div>
+              )}
             </div>
           </div>
         </div>

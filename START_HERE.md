@@ -81,81 +81,29 @@ While others build simple swap interfaces, ShiftFlow is **infrastructure** that 
 
 **DeFi Sniper**: Automatically capture high-yield opportunities
 ```typescript
-whenPriceIs('ETH', 'below', 3000)
-  .thenSwap({ from: 'eth/arbitrum', to: 'btc/bitcoin' })
-```
+---
 
-**Treasury Manager**: Automated portfolio rebalancing
-```typescript
-whenPriceIs('BTC', 'above', 100000)
-  .thenSwap({ from: 'btc/bitcoin', to: 'usdc/arbitrum' })
-```
+### 🚀 Step 3: Deployment (20 minutes)
 
-**Gaming Cash-Out**: Seamless in-game token conversion
-```typescript
-whenPriceIs('AVAX', 'above', 40)
-  .thenSwap({ from: 'avax/avalanche', to: 'usdc/polygon' })
-```
+**Read this file:** `DEPLOYMENT_GUIDE.md`
 
-### 3. Developer-First Design
-
-Clean SDK with fluent API:
-```typescript
-import { ShiftFlowClient, createWorkflow } from '@shiftflow/sdk';
-
-const workflow = createWorkflow()
-  .id('my-workflow')
-  .name('My Workflow')
-  .userId('user_123')
-  .whenPriceIs('ETH', 'below', 3000)
-  .thenSwap({ /* ... */ })
-  .build();
-
-client.registerWorkflow(workflow);
-client.startMonitoring();
-```
+Deploy steps:
+1. Push code to GitHub
+2. Deploy to Vercel
+3. Set environment variables
+4. Run production migration
+5. Verify cron jobs
+6. Test in production
 
 ---
 
-## 📊 Project Highlights
+## 📚 Complete Documentation
 
-### Technical Excellence
-- ✅ Complete SideShift API integration (quote → shift → monitor)
-- ✅ Robust workflow engine with state management
-- ✅ Real-time price oracle integration
-- ✅ Type-safe TypeScript throughout
-- ✅ Production-ready error handling
-
-### Innovation
-- ✅ Novel "Zapier for Cross-Chain DeFi" concept
-- ✅ Composable workflow system
-- ✅ SDK enables ecosystem growth
-- ✅ Non-custodial automation
-
-### Documentation
-- ✅ 7 comprehensive documentation files
-- ✅ 7 example workflows
-- ✅ API reference
-- ✅ Architecture diagrams
-- ✅ Setup guides
-
----
-
-## 📁 Project Structure
-
-```
-shiftflow/
-├── packages/
-│   ├── engine/              # Backend workflow engine
-│   │   ├── src/
-│   │   │   ├── services/
-│   │   │   │   ├── sideshift.ts       # SideShift API client
-│   │   │   │   ├── price-oracle.ts    # Price monitoring
-│   │   │   │   └── workflow-engine.ts # Core orchestration
-│   │   │   ├── types/index.ts         # TypeScript definitions
-│   │   │   ├── index.ts               # Public exports
-│   │   │   └── demo.ts                # Working demo
-│   │   └── package.json
+### Setup & Testing
+- **`SETUP_NOW.md`** ⭐ - Database setup instructions (START HERE)
+- **`TESTING_GUIDE.md`** - Complete testing checklist
+- **`DEPLOYMENT_GUIDE.md`** - Production deployment guide
+- **`DATABASE_SETUP_INSTRUCTIONS.md`** - Detailed Vercel Postgres guide
 │   │
 │   ├── sdk/                 # TypeScript SDK
 │   │   ├── src/

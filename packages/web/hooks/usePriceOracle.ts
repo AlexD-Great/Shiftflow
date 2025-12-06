@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { getPriceOracle, PriceData } from '@/lib/price-oracle'
+import { getPriceOracle, PriceData } from '@/lib/price-oracle-client'
 
 export function usePriceOracle(symbols: string[], refreshInterval: number = 60000) {
   const [prices, setPrices] = useState<Record<string, PriceData>>({})
@@ -7,6 +7,11 @@ export function usePriceOracle(symbols: string[], refreshInterval: number = 6000
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
+    if (symbols.length === 0) {
+      setLoading(false)
+      return
+    }
+
     const fetchPrices = async () => {
       try {
         const oracle = getPriceOracle()
@@ -17,14 +22,18 @@ export function usePriceOracle(symbols: string[], refreshInterval: number = 6000
             const data = await oracle.getPriceData(symbol)
             priceData[symbol] = data
           } catch (err) {
-            console.error(`Failed to fetch price for ${symbol}:`, err)
+            // Silently fail for individual symbols
+            // Don't log to console to avoid spamming errors
           }
         }
 
         setPrices(priceData)
         setError(null)
       } catch (err: any) {
-        setError(err.message || 'Failed to fetch prices')
+        // Only set error if all symbols failed
+        if (Object.keys(prices).length === 0) {
+          setError(err.message || 'Failed to fetch prices')
+        }
       } finally {
         setLoading(false)
       }

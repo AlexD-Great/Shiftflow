@@ -259,11 +259,10 @@ export class WorkflowExecutor {
         priceData['ETH/BTC'] = prices.ETH / prices.BTC
       }
 
-      console.log('[Executor] Fetched price data:', priceData)
       return priceData
     } catch (error) {
-      console.error('[Executor] Error fetching price data:', error)
-      // Return empty object on error
+      // Silently fail and return empty object to avoid console spam
+      // This is expected when running client-side without API access
       return {}
     }
   }

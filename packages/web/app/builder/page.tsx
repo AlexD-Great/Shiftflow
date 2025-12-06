@@ -3,14 +3,15 @@
 import { useState } from 'react';
 import { usePriceOracle } from '@/hooks/usePriceOracle';
 import { formatPrice, formatPriceChange } from '@/lib/price-oracle';
-import { getExecutor } from '@/lib/workflow-executor';
 import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 
 type ConditionType = 'PRICE_THRESHOLD' | 'GAS_THRESHOLD' | 'TIME_BASED' | 'COMPOSITE_AND' | 'COMPOSITE_OR';
 type ActionType = 'CROSS_CHAIN_SWAP' | 'NOTIFICATION' | 'WEBHOOK' | 'MULTI_STEP';
 
 export default function WorkflowBuilder() {
   const router = useRouter();
+  const { data: session } = useSession();
   const [workflowName, setWorkflowName] = useState('');
   const [conditionType, setConditionType] = useState<ConditionType>('PRICE_THRESHOLD');
   const [actionType, setActionType] = useState<ActionType>('CROSS_CHAIN_SWAP');
@@ -18,6 +19,7 @@ export default function WorkflowBuilder() {
   const [safeAddress, setSafeAddress] = useState('');
   const [deployStatus, setDeployStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [statusMessage, setStatusMessage] = useState('');
+  const [isDeploying, setIsDeploying] = useState(false);
 
   // Price condition state
   const [token, setToken] = useState('ETH');
@@ -40,12 +42,10 @@ export default function WorkflowBuilder() {
   const [amount, setAmount] = useState('0.01');
   const [settleAddress, setSettleAddress] = useState('');
 
-  const generateWorkflow = () => {
+  const generateWorkflowPreview = () => {
     const workflow = {
-      id: `workflow_${Date.now()}`,
       name: workflowName || 'Untitled Workflow',
       description: `Auto-generated workflow`,
-      userId: 'demo_user',
       condition: {
         type: conditionType,
         ...(conditionType === 'PRICE_THRESHOLD' && {
@@ -73,17 +73,14 @@ export default function WorkflowBuilder() {
           }),
         },
       ],
-      status: 'active',
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      executionCount: 0,
+      status: 'ACTIVE',
       ...(useSafe && { safeAddress, requiresApproval: true }),
     };
 
     return JSON.stringify(workflow, null, 2);
   };
 
-  const handleDeploy = () => {
+  const handleDeploy = async () => {
     // Validate required fields
     if (!workflowName.trim()) {
       setDeployStatus('error');
@@ -106,27 +103,36 @@ export default function WorkflowBuilder() {
       return;
     }
 
+    if (!session) {
+      setDeployStatus('error');
+      setStatusMessage('Please sign in to create workflows');
+      setTimeout(() => setDeployStatus('idle'), 3000);
+      return;
+    }
+
+    setIsDeploying(true);
+
     try {
       // Create workflow object
-      const workflow = {
-        id: `workflow_${Date.now()}`,
-        name: workflowName || 'Untitled Workflow',
+      const workflowData = {
+        name: workflowName,
         description: `Auto-generated workflow`,
-        userId: 'demo_user',
-        condition: {
-          type: conditionType,
-          ...(conditionType === 'PRICE_THRESHOLD' && {
-            token,
-            comparison,
-            threshold: parseFloat(threshold),
-            currency: 'USD',
-          }),
-          ...(conditionType === 'GAS_THRESHOLD' && {
-            network: gasNetwork,
-            comparison: gasComparison,
-            threshold: parseFloat(gasThreshold),
-          }),
-        },
+        conditions: [
+          {
+            type: conditionType,
+            ...(conditionType === 'PRICE_THRESHOLD' && {
+              token,
+              comparison,
+              threshold: parseFloat(threshold),
+              currency: 'USD',
+            }),
+            ...(conditionType === 'GAS_THRESHOLD' && {
+              network: gasNetwork,
+              comparison: gasComparison,
+              threshold: parseFloat(gasThreshold),
+            }),
+          },
+        ],
         actions: [
           {
             type: actionType,
@@ -140,29 +146,40 @@ export default function WorkflowBuilder() {
             }),
           },
         ],
-        status: 'active',
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        executionCount: 0,
-        ...(useSafe && { safeAddress, requiresApproval: true }),
+        ...(useSafe && { safeAddress }),
       };
 
-      // Add workflow to executor
-      const executor = getExecutor();
-      executor.addWorkflow(workflow as any);
+      // Save to database via API
+      const response = await fetch('/api/workflows', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(workflowData),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to create workflow');
+      }
+
+      const workflow = await response.json();
 
       // Show success message
       setDeployStatus('success');
-      setStatusMessage('Workflow deployed successfully! Redirecting to Dashboard...');
+      setStatusMessage('Workflow created successfully! Redirecting to Dashboard...');
       
       // Redirect to dashboard after 2 seconds
       setTimeout(() => {
         router.push('/dashboard');
       }, 2000);
-    } catch (error) {
+    } catch (error: any) {
+      console.error('Failed to deploy workflow:', error);
       setDeployStatus('error');
-      setStatusMessage('Failed to deploy workflow. Please try again.');
+      setStatusMessage(error.message || 'Failed to deploy workflow. Please try again.');
       setTimeout(() => setDeployStatus('idle'), 3000);
+    } finally {
+      setIsDeploying(false);
     }
   };
 
@@ -512,18 +529,19 @@ export default function WorkflowBuilder() {
               </div>
 
               <div className="mb-4">
-                <h3 className="text-sm font-medium text-slate-400 mb-2">Generated Code</h3>
+                <h3 className="text-sm font-medium text-slate-400 mb-2">Workflow Preview</h3>
                 <pre className="bg-slate-900 p-4 rounded-lg text-xs text-slate-300 overflow-x-auto max-h-96">
-                  {generateWorkflow()}
+                  {generateWorkflowPreview()}
                 </pre>
               </div>
 
               <div className="space-y-2">
                 <button 
                   onClick={handleDeploy}
-                  className="w-full px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+                  disabled={isDeploying || !session}
+                  className="w-full px-4 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-600 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors"
                 >
-                  Deploy Workflow
+                  {isDeploying ? 'Creating...' : session ? 'Create Workflow' : 'Sign In to Create'}
                 </button>
                 <button 
                   onClick={handleSaveDraft}

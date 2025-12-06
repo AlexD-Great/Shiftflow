@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { WalletAuth } from './wallet-auth'
 
 interface NavItem {
   name: string
@@ -177,7 +178,8 @@ export function Sidebar() {
           </nav>
 
           {/* Footer */}
-          <div className="p-4 border-t border-slate-700">
+          <div className="p-4 border-t border-slate-700 space-y-3">
+            <WalletAuth />
             <div className="text-xs text-slate-500 text-center">
               © 2025 ShiftFlow
             </div>
