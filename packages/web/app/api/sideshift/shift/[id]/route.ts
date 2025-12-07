@@ -8,7 +8,7 @@ const SIDESHIFT_API_BASE = "https://sideshift.ai/api/v2";
 // GET /api/sideshift/shift/:id - Get shift status (proxy)
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -16,9 +16,10 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    console.log(`[SideShift Status] Fetching shift ${params.id}`);
+    const { id } = await params;
+    console.log(`[SideShift Status] Fetching shift ${id}`);
 
-    const response = await fetch(`${SIDESHIFT_API_BASE}/shifts/${params.id}`);
+    const response = await fetch(`${SIDESHIFT_API_BASE}/shifts/${id}`);
     const data = await response.json();
 
     if (!response.ok) {
@@ -32,7 +33,7 @@ export async function GET(
     // Update shift status in database
     try {
       await prisma.sideShiftOrder.updateMany({
-        where: { shiftId: params.id },
+        where: { shiftId: id },
         data: {
           status: data.status,
           depositHash: data.deposits?.[0]?.depositHash,
@@ -40,7 +41,7 @@ export async function GET(
           updatedAt: new Date(),
         },
       });
-      console.log(`[SideShift Status] Updated shift ${params.id} status: ${data.status}`);
+      console.log(`[SideShift Status] Updated shift ${id} status: ${data.status}`);
     } catch (dbError) {
       console.error("[SideShift Status] Database error:", dbError);
       // Don't fail the request if DB update fails

@@ -6,7 +6,7 @@ import { prisma } from "@/lib/prisma";
 // GET /api/workflows/:id - Get workflow details
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -14,10 +14,11 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const { id } = await params;
     const userId = (session.user as any).id;
     const workflow = await prisma.workflow.findFirst({
       where: {
-        id: params.id,
+        id,
         userId,
       },
       include: {
@@ -45,7 +46,7 @@ export async function GET(
 // PATCH /api/workflows/:id - Update workflow
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -53,12 +54,13 @@ export async function PATCH(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const { id } = await params;
     const userId = (session.user as any).id;
     const body = await req.json();
 
     // Verify ownership
     const existing = await prisma.workflow.findFirst({
-      where: { id: params.id, userId },
+      where: { id, userId },
     });
 
     if (!existing) {
@@ -67,7 +69,7 @@ export async function PATCH(
 
     // Update workflow
     const workflow = await prisma.workflow.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         ...body,
         updatedAt: new Date(),
@@ -87,7 +89,7 @@ export async function PATCH(
 // DELETE /api/workflows/:id - Delete workflow
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -95,11 +97,12 @@ export async function DELETE(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const { id } = await params;
     const userId = (session.user as any).id;
 
     // Verify ownership
     const existing = await prisma.workflow.findFirst({
-      where: { id: params.id, userId },
+      where: { id, userId },
     });
 
     if (!existing) {
@@ -108,7 +111,7 @@ export async function DELETE(
 
     // Delete workflow (cascades to executions)
     await prisma.workflow.delete({
-      where: { id: params.id },
+      where: { id },
     });
 
     return NextResponse.json({ success: true });
