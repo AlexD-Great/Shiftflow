@@ -4,5 +4,6 @@
       "path": "/api/cron/monitor",
       "schedule": "0 0 * * *"
     }
-  ]
+  ],
+  "buildCommand": "npm run build -- --webpack"
 }
