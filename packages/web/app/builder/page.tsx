@@ -84,6 +84,15 @@ export default function WorkflowBuilder() {
   const [amount, setAmount] = useState('0.01');
   const [settleAddress, setSettleAddress] = useState('');
 
+  // Notification action state
+  const [notificationTitle, setNotificationTitle] = useState('Workflow Executed');
+  const [notificationMessage, setNotificationMessage] = useState('Your workflow has been executed successfully');
+
+  // Webhook action state
+  const [webhookUrl, setWebhookUrl] = useState('');
+  const [webhookMethod, setWebhookMethod] = useState<'POST' | 'GET'>('POST');
+  const [webhookBody, setWebhookBody] = useState('{}');
+
   const generateWorkflowPreview = () => {
     const workflow = {
       name: workflowName || 'Untitled Workflow',
@@ -112,6 +121,15 @@ export default function WorkflowBuilder() {
             settleNetwork,
             amount,
             settleAddress,
+          }),
+          ...(actionType === 'NOTIFICATION' && {
+            title: notificationTitle,
+            message: notificationMessage,
+          }),
+          ...(actionType === 'WEBHOOK' && {
+            url: webhookUrl,
+            method: webhookMethod,
+            body: JSON.parse(webhookBody || '{}'),
           }),
         },
       ],
@@ -548,6 +566,99 @@ export default function WorkflowBuilder() {
                       />
                     </div>
                   </>
+                )}
+
+                {actionType === 'NOTIFICATION' && (
+                  <>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-300 mb-2">
+                        Notification Title
+                      </label>
+                      <input
+                        type="text"
+                        value={notificationTitle}
+                        onChange={(e) => setNotificationTitle(e.target.value)}
+                        placeholder="e.g., Workflow Executed"
+                        className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-300 mb-2">
+                        Message
+                      </label>
+                      <textarea
+                        value={notificationMessage}
+                        onChange={(e) => setNotificationMessage(e.target.value)}
+                        placeholder="Notification message..."
+                        rows={4}
+                        className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                      />
+                    </div>
+                    <div className="p-4 bg-blue-900/20 border border-blue-700 rounded-lg">
+                      <p className="text-blue-300 text-sm">
+                        💡 This will send an in-app notification when the workflow executes
+                      </p>
+                    </div>
+                  </>
+                )}
+
+                {actionType === 'WEBHOOK' && (
+                  <>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-300 mb-2">
+                        Webhook URL
+                      </label>
+                      <input
+                        type="url"
+                        value={webhookUrl}
+                        onChange={(e) => setWebhookUrl(e.target.value)}
+                        placeholder="https://your-api.com/webhook"
+                        className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-300 mb-2">
+                        Method
+                      </label>
+                      <select
+                        value={webhookMethod}
+                        onChange={(e) => setWebhookMethod(e.target.value as 'POST' | 'GET')}
+                        className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                      >
+                        <option value="POST">POST</option>
+                        <option value="GET">GET</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-300 mb-2">
+                        Request Body (JSON)
+                      </label>
+                      <textarea
+                        value={webhookBody}
+                        onChange={(e) => setWebhookBody(e.target.value)}
+                        placeholder='{"key": "value"}'
+                        rows={4}
+                        className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-blue-500 font-mono text-sm"
+                      />
+                    </div>
+                    <div className="p-4 bg-blue-900/20 border border-blue-700 rounded-lg">
+                      <p className="text-blue-300 text-sm">
+                        💡 This will call your webhook URL when the workflow executes
+                      </p>
+                    </div>
+                  </>
+                )}
+
+                {actionType === 'MULTI_STEP' && (
+                  <div className="p-6 bg-yellow-900/20 border border-yellow-700 rounded-lg">
+                    <p className="text-yellow-300 text-sm mb-2">
+                      🚧 Multi-step workflows are coming soon!
+                    </p>
+                    <p className="text-slate-400 text-sm">
+                      This feature will allow you to chain multiple actions together (e.g., swap → notify → webhook).
+                      For now, please use single-action workflows.
+                    </p>
+                  </div>
                 )}
               </div>
             </div>

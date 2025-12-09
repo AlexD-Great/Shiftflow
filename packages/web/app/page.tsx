@@ -156,20 +156,18 @@ export default function Home() {
           </p>
           <div className="flex gap-4 justify-center">
             <a
-              href="https://github.com/AlexD-Great/Shiftflow/blob/main/QUICKSTART.md"
+              href="https://github.com/AlexD-Great/Shiftflow#readme"
               target="_blank"
               rel="noopener noreferrer"
               className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
             >
-              Quick Start Guide
+              Documentation
             </a>
             <a
-              href="https://github.com/AlexD-Great/Shiftflow/blob/main/docs/EXAMPLES.md"
-              target="_blank"
-              rel="noopener noreferrer"
+              href="/builder"
               className="px-6 py-3 bg-slate-700 hover:bg-slate-600 text-white rounded-lg font-medium transition-colors"
             >
-              View Examples
+              Try It Now
             </a>
           </div>
         </section>
