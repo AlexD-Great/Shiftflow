@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { usePriceOracle } from '@/hooks/usePriceOracle';
 import { formatPrice, formatPriceChange } from '@/lib/price-oracle';
 import { useRouter } from 'next/navigation';
@@ -20,6 +20,48 @@ export default function WorkflowBuilder() {
   const [deployStatus, setDeployStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [statusMessage, setStatusMessage] = useState('');
   const [isDeploying, setIsDeploying] = useState(false);
+
+  // Load template from localStorage on mount
+  useEffect(() => {
+    const templateData = localStorage.getItem('selectedTemplate');
+    if (templateData) {
+      try {
+        const template = JSON.parse(templateData);
+        // Populate form with template data
+        setWorkflowName(template.name);
+        
+        // Map template condition type to our condition types
+        if (template.condition.type === 'Price Threshold') {
+          setConditionType('PRICE_THRESHOLD');
+        } else if (template.condition.type === 'Gas Threshold') {
+          setConditionType('GAS_THRESHOLD');
+        } else if (template.condition.type === 'Time-Based') {
+          setConditionType('TIME_BASED');
+        }
+        
+        // Map template action type to our action types
+        if (template.action.type === 'Cross-Chain Swap') {
+          setActionType('CROSS_CHAIN_SWAP');
+        } else if (template.action.type === 'Notification') {
+          setActionType('NOTIFICATION');
+        } else if (template.action.type === 'Webhook') {
+          setActionType('WEBHOOK');
+        } else if (template.action.type === 'Multi-Step') {
+          setActionType('MULTI_STEP');
+        }
+        
+        // Clear the template from localStorage after loading
+        localStorage.removeItem('selectedTemplate');
+        
+        // Show success message
+        setDeployStatus('success');
+        setStatusMessage(`Template "${template.name}" loaded successfully!`);
+        setTimeout(() => setDeployStatus('idle'), 3000);
+      } catch (error) {
+        console.error('Error loading template:', error);
+      }
+    }
+  }, []);
 
   // Price condition state
   const [token, setToken] = useState('ETH');
