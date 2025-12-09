@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { PriceOracleService } from "./price-oracle";
+import { NotificationService } from "./notification-service";
 
 /**
  * Workflow Monitor Service
@@ -7,9 +8,11 @@ import { PriceOracleService } from "./price-oracle";
  */
 export class WorkflowMonitor {
   private priceOracle: PriceOracleService;
+  private notificationService: NotificationService;
 
   constructor() {
     this.priceOracle = PriceOracleService.getInstance();
+    this.notificationService = new NotificationService();
   }
 
   /**
@@ -65,6 +68,13 @@ export class WorkflowMonitor {
 
     console.log(`[Workflow Monitor] ✅ Conditions met for workflow ${workflow.id}`);
 
+    // Notify user that conditions are met
+    await this.notificationService.notifyConditionMet(
+      workflow.userId,
+      workflow.name,
+      workflow.conditions
+    );
+
     // Create execution record
     const execution = await prisma.execution.create({
       data: {
@@ -117,6 +127,21 @@ export class WorkflowMonitor {
         },
       });
 
+      // Get execution details for notification
+      const executionDetails = await prisma.execution.findUnique({
+        where: { id: execution.id },
+        select: { actionResults: true },
+      });
+
+      // Send success notifications
+      await this.notificationService.notifyWorkflowExecution(
+        workflow.userId,
+        workflow.name,
+        execution.id,
+        "success",
+        executionDetails?.actionResults || {}
+      );
+
       console.log(`[Workflow Monitor] ✅ Executed workflow ${workflow.id}`);
     } catch (error) {
       // Mark execution as failed
@@ -138,6 +163,15 @@ export class WorkflowMonitor {
           data: { error: (error as Error).message },
         },
       });
+
+      // Send failure notifications
+      await this.notificationService.notifyWorkflowExecution(
+        workflow.userId,
+        workflow.name,
+        execution.id,
+        "failed",
+        { error: (error as Error).message, stack: (error as Error).stack }
+      );
 
       console.error(`[Workflow Monitor] ❌ Failed to execute workflow ${workflow.id}:`, error);
     }
