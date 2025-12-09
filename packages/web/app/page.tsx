@@ -2,6 +2,14 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
       <div className="container mx-auto px-4 py-16">
+        {/* Beta Banner */}
+        <div className="mb-8 flex justify-center">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-yellow-600/20 to-orange-600/20 border border-yellow-500/30 rounded-full">
+            <span className="text-yellow-400 text-sm font-medium">🚧 BETA</span>
+            <span className="text-slate-300 text-sm">Currently in testing phase - Join our beta program!</span>
+          </div>
+        </div>
+
         {/* Header */}
         <header className="text-center mb-20">
           <div className="mb-6">

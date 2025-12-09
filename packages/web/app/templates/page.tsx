@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 interface Template {
   id: string;
@@ -178,6 +179,7 @@ const templates: Template[] = [
 ];
 
 export default function TemplatesPage() {
+  const router = useRouter();
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null);
 
@@ -188,8 +190,10 @@ export default function TemplatesPage() {
     : templates.filter(t => t.category === selectedCategory);
 
   const handleUseTemplate = (template: Template) => {
-    // In a real app, this would populate the builder with the template
-    alert(`Template "${template.name}" would be loaded into the workflow builder!`);
+    // Store template in localStorage for the builder to pick up
+    localStorage.setItem('selectedTemplate', JSON.stringify(template));
+    // Navigate to builder
+    router.push('/builder');
   };
 
   return (
