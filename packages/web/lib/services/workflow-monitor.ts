@@ -402,7 +402,6 @@ export class WorkflowMonitor {
           settleAddress: shift.settleAddress,
           depositAmount: shift.depositAmount,
           settleAmount: shift.settleAmount,
-          rate: shift.rate,
           expiresAt: new Date(shift.expiresAt),
           status: shift.status,
         },
@@ -421,7 +420,6 @@ export class WorkflowMonitor {
         settleCoin: shift.settleCoin,
         settleAmount: shift.settleAmount,
         settleAddress: shift.settleAddress,
-        rate: shift.rate,
         expiresAt: shift.expiresAt,
         message: `Shift created successfully. Send ${shift.depositAmount} ${shift.depositCoin} to ${shift.depositAddress}`,
       };
