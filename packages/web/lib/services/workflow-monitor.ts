@@ -324,22 +324,111 @@ export class WorkflowMonitor {
   private async executeSideShiftSwap(action: any, userId: string): Promise<any> {
     console.log("[Workflow Monitor] Executing SideShift swap...");
 
-    // TODO: Implement actual SideShift swap
-    // This would:
-    // 1. Request quote from SideShift API
-    // 2. Create fixed shift
-    // 3. Return deposit address
-    // 4. Store shift in database
+    const {
+      depositCoin,
+      depositNetwork,
+      settleCoin,
+      settleNetwork,
+      amount,
+      settleAddress,
+    } = action;
 
-    // For now, return mock data
-    return {
-      type: "sideshift_swap",
-      status: "pending",
-      message: "SideShift swap initiated (mock)",
-      depositCoin: action.depositCoin,
-      settleCoin: action.settleCoin,
-      amount: action.amount,
-    };
+    // Validate required fields
+    if (!depositCoin || !settleCoin || !amount || !settleAddress) {
+      throw new Error("Missing required fields for SideShift swap");
+    }
+
+    try {
+      // Step 1: Request quote from SideShift API
+      console.log(`[Workflow Monitor] Requesting quote: ${depositCoin} -> ${settleCoin}`);
+      
+      const quoteResponse = await fetch("https://sideshift.ai/api/v2/quotes", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-sideshift-secret": process.env.SIDESHIFT_SECRET || "",
+        },
+        body: JSON.stringify({
+          depositCoin,
+          settleCoin,
+          depositNetwork: depositNetwork || depositCoin,
+          settleNetwork: settleNetwork || settleCoin,
+          affiliateId: process.env.SIDESHIFT_AFFILIATE_ID || "",
+        }),
+      });
+
+      if (!quoteResponse.ok) {
+        const errorData = await quoteResponse.json();
+        throw new Error(`SideShift quote failed: ${errorData.error?.message || quoteResponse.statusText}`);
+      }
+
+      const quote = await quoteResponse.json();
+      console.log(`[Workflow Monitor] Quote received: ${quote.id}`);
+
+      // Step 2: Create fixed shift
+      console.log(`[Workflow Monitor] Creating fixed shift...`);
+      
+      const shiftResponse = await fetch("https://sideshift.ai/api/v2/shifts/fixed", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-sideshift-secret": process.env.SIDESHIFT_SECRET || "",
+        },
+        body: JSON.stringify({
+          quoteId: quote.id,
+          settleAddress,
+          affiliateId: process.env.SIDESHIFT_AFFILIATE_ID || "",
+        }),
+      });
+
+      if (!shiftResponse.ok) {
+        const errorData = await shiftResponse.json();
+        throw new Error(`SideShift shift creation failed: ${errorData.error?.message || shiftResponse.statusText}`);
+      }
+
+      const shift = await shiftResponse.json();
+      console.log(`[Workflow Monitor] Shift created: ${shift.id}`);
+
+      // Step 3: Store shift in database
+      await prisma.sideShiftOrder.create({
+        data: {
+          userId,
+          shiftId: shift.id,
+          depositCoin: shift.depositCoin,
+          depositNetwork: shift.depositNetwork,
+          settleCoin: shift.settleCoin,
+          settleNetwork: shift.settleNetwork,
+          depositAddress: shift.depositAddress,
+          settleAddress: shift.settleAddress,
+          depositAmount: shift.depositAmount,
+          settleAmount: shift.settleAmount,
+          rate: shift.rate,
+          expiresAt: new Date(shift.expiresAt),
+          status: shift.status,
+        },
+      });
+
+      console.log(`[Workflow Monitor] ✅ SideShift swap executed successfully`);
+
+      // Return shift details
+      return {
+        type: "sideshift_swap",
+        status: "created",
+        shiftId: shift.id,
+        depositAddress: shift.depositAddress,
+        depositCoin: shift.depositCoin,
+        depositAmount: shift.depositAmount,
+        settleCoin: shift.settleCoin,
+        settleAmount: shift.settleAmount,
+        settleAddress: shift.settleAddress,
+        rate: shift.rate,
+        expiresAt: shift.expiresAt,
+        message: `Shift created successfully. Send ${shift.depositAmount} ${shift.depositCoin} to ${shift.depositAddress}`,
+      };
+    } catch (error) {
+      console.error("[Workflow Monitor] SideShift swap failed:", error);
+      throw error;
+    }
   }
 
   /**
