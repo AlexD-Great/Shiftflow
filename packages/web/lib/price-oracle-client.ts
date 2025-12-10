@@ -1,7 +1,7 @@
 /**
  * Client-side Price Oracle
- * Fetches prices from CoinGecko API (client-side for demo purposes)
- * In production, this should call a backend API endpoint
+ * Fetches prices from our backend API proxy (/api/prices)
+ * which proxies requests to CoinGecko to avoid CORS issues
  */
 
 export interface PriceData {
@@ -23,11 +23,10 @@ class PriceOracleClient {
     }
 
     try {
-      // For demo: Use CoinGecko public API
-      // In production: Call your backend API endpoint
+      // Use our backend API proxy to avoid CORS issues
       const coinId = this.symbolToCoinId(symbol)
       const response = await fetch(
-        `https://api.coingecko.com/api/v3/simple/price?ids=${coinId}&vs_currencies=usd&include_24hr_change=true`,
+        `/api/prices?ids=${coinId}`,
         { cache: 'no-store' }
       )
 
