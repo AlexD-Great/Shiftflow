@@ -390,6 +390,29 @@ export default function WorkflowBuilder() {
                   </>
                 )}
 
+                {conditionType === 'TIME_BASED' && (
+                  <>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-300 mb-2">
+                        Schedule
+                      </label>
+                      <select
+                        className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                      >
+                        <option value="hourly">Every Hour</option>
+                        <option value="daily">Every Day</option>
+                        <option value="weekly">Every Week</option>
+                        <option value="monthly">Every Month</option>
+                      </select>
+                    </div>
+                    <div className="p-4 bg-blue-900/20 border border-blue-700 rounded-lg">
+                      <p className="text-blue-300 text-sm">
+                        💡 Time-based workflows execute on a schedule regardless of market conditions
+                      </p>
+                    </div>
+                  </>
+                )}
+
                 {conditionType === 'PRICE_THRESHOLD' && (
                   <>
                     {/* Live Price Display */}

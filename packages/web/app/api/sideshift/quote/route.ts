@@ -3,13 +3,22 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/config";
 
 const SIDESHIFT_API_BASE = "https://sideshift.ai/api/v2";
-const SIDESHIFT_SECRET = process.env.SIDESHIFT_SECRET!;
-const AFFILIATE_ID = process.env.AFFILIATE_ID!;
+const SIDESHIFT_SECRET = process.env.SIDESHIFT_SECRET;
+const AFFILIATE_ID = process.env.SIDESHIFT_AFFILIATE_ID;
 
 // POST /api/sideshift/quote - Request a quote (proxy)
 // CRITICAL: This endpoint implements Mike's requirement to pass x-user-ip header
 export async function POST(req: NextRequest) {
   try {
+    // Check if SideShift credentials are configured
+    if (!SIDESHIFT_SECRET) {
+      console.error("[SideShift Quote] SIDESHIFT_SECRET not configured");
+      return NextResponse.json(
+        { error: "SideShift API not configured. Please add SIDESHIFT_SECRET to environment variables." },
+        { status: 500 }
+      );
+    }
+
     const session = await getServerSession(authOptions);
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -35,7 +44,7 @@ export async function POST(req: NextRequest) {
       },
       body: JSON.stringify({
         ...body,
-        affiliateId: AFFILIATE_ID, // Always include our affiliate ID
+        ...(AFFILIATE_ID && { affiliateId: AFFILIATE_ID }), // Include affiliate ID if configured
       }),
     });
 
