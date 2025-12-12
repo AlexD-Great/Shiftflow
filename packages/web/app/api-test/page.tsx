@@ -69,9 +69,20 @@ export default function APITestPage() {
                   <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
                   <p className="text-slate-400 mt-4">Fetching prices...</p>
                 </div>
+              ) : Object.keys(prices).length === 0 ? (
+                <div className="p-4 bg-red-900/20 border border-red-700 rounded-lg">
+                  <p className="text-red-300 text-sm">
+                    Failed to load prices. Please check your internet connection and try refreshing the page.
+                  </p>
+                </div>
               ) : (
                 <div className="space-y-4">
                   {Object.entries(prices).map(([symbol, data]) => {
+                    // Skip if data is invalid
+                    if (!data || typeof data.price !== 'number') {
+                      return null;
+                    }
+                    
                     const change = formatPriceChange(data.change24h);
                     return (
                       <div
