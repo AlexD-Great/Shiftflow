@@ -532,23 +532,46 @@ export default function WorkflowBuilder() {
                         <label className="block text-sm font-medium text-slate-300 mb-2">
                           From Coin
                         </label>
-                        <input
-                          type="text"
+                        <select
                           value={depositCoin}
                           onChange={(e) => setDepositCoin(e.target.value)}
                           className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-blue-500"
-                        />
+                        >
+                          <option value="eth">ETH - Ethereum</option>
+                          <option value="btc">BTC - Bitcoin</option>
+                          <option value="usdt">USDT - Tether</option>
+                          <option value="usdc">USDC - USD Coin</option>
+                          <option value="bnb">BNB - Binance Coin</option>
+                          <option value="sol">SOL - Solana</option>
+                          <option value="matic">MATIC - Polygon</option>
+                          <option value="avax">AVAX - Avalanche</option>
+                          <option value="ada">ADA - Cardano</option>
+                          <option value="dot">DOT - Polkadot</option>
+                          <option value="xrp">XRP - Ripple</option>
+                        </select>
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-slate-300 mb-2">
                           From Network
                         </label>
-                        <input
-                          type="text"
+                        <select
                           value={depositNetwork}
                           onChange={(e) => setDepositNetwork(e.target.value)}
                           className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-blue-500"
-                        />
+                        >
+                          <option value="ethereum">Ethereum Mainnet</option>
+                          <option value="arbitrum">Arbitrum</option>
+                          <option value="optimism">Optimism</option>
+                          <option value="polygon">Polygon</option>
+                          <option value="base">Base</option>
+                          <option value="bsc">Binance Smart Chain</option>
+                          <option value="avalanche">Avalanche C-Chain</option>
+                          <option value="bitcoin">Bitcoin</option>
+                          <option value="solana">Solana</option>
+                          <option value="cardano">Cardano</option>
+                          <option value="polkadot">Polkadot</option>
+                          <option value="ripple">Ripple</option>
+                        </select>
                       </div>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
@@ -556,23 +579,46 @@ export default function WorkflowBuilder() {
                         <label className="block text-sm font-medium text-slate-300 mb-2">
                           To Coin
                         </label>
-                        <input
-                          type="text"
+                        <select
                           value={settleCoin}
                           onChange={(e) => setSettleCoin(e.target.value)}
                           className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-blue-500"
-                        />
+                        >
+                          <option value="eth">ETH - Ethereum</option>
+                          <option value="btc">BTC - Bitcoin</option>
+                          <option value="usdt">USDT - Tether</option>
+                          <option value="usdc">USDC - USD Coin</option>
+                          <option value="bnb">BNB - Binance Coin</option>
+                          <option value="sol">SOL - Solana</option>
+                          <option value="matic">MATIC - Polygon</option>
+                          <option value="avax">AVAX - Avalanche</option>
+                          <option value="ada">ADA - Cardano</option>
+                          <option value="dot">DOT - Polkadot</option>
+                          <option value="xrp">XRP - Ripple</option>
+                        </select>
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-slate-300 mb-2">
                           To Network
                         </label>
-                        <input
-                          type="text"
+                        <select
                           value={settleNetwork}
                           onChange={(e) => setSettleNetwork(e.target.value)}
                           className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-blue-500"
-                        />
+                        >
+                          <option value="ethereum">Ethereum Mainnet</option>
+                          <option value="arbitrum">Arbitrum</option>
+                          <option value="optimism">Optimism</option>
+                          <option value="polygon">Polygon</option>
+                          <option value="base">Base</option>
+                          <option value="bsc">Binance Smart Chain</option>
+                          <option value="avalanche">Avalanche C-Chain</option>
+                          <option value="bitcoin">Bitcoin</option>
+                          <option value="solana">Solana</option>
+                          <option value="cardano">Cardano</option>
+                          <option value="polkadot">Polkadot</option>
+                          <option value="ripple">Ripple</option>
+                        </select>
                       </div>
                     </div>
                     <div>
