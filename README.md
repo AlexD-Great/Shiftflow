@@ -11,7 +11,7 @@
   </p>
 
   <p>
-    <strong>🏆 Built for SideShift Hackathon 2024</strong>
+    <strong>🏆 Built for SideShift Hackathon 2025</strong>
   </p>
 </div>
 
