@@ -107,6 +107,168 @@ THEN: Swap 0.5 ETH to BTC via SideShift
 
 ---
 
+## ⚡ Gas Optimization & Cost Efficiency
+
+### **Why Gas Matters**
+
+On Ethereum mainnet, a simple swap can cost $50-200 in gas fees during peak times. ShiftFlow helps you avoid this.
+
+### **Our Gas Optimization Strategy**
+
+**1. Off-Chain Orchestration**
+- All workflow logic runs off-chain (no gas costs)
+- Only the final swap transaction requires gas
+- No smart contracts to deploy or maintain
+
+**2. L2-First Execution**
+- SideShift supports Arbitrum, Optimism, and other L2s
+- Execute swaps for $0.10-1.00 instead of $50+
+- 50-100x gas savings vs. Ethereum mainnet
+
+**3. Gas-Aware Conditions**
+```
+IF ETH price < $3,000 AND gas < 20 gwei
+THEN execute swap
+```
+- Combine price + gas conditions
+- Only execute when both are favorable
+- Typical savings: 40-60% on gas fees
+
+**4. Batch-Friendly Design**
+- Multi-step workflows execute in sequence
+- Reduce total transaction count
+- Optimize for gas efficiency
+
+### **Real Cost Comparison**
+
+| Operation | Ethereum Mainnet | Arbitrum (via SideShift) | Savings |
+|-----------|------------------|--------------------------|---------|
+| Simple Swap | $50-200 | $0.50-2 | 99% |
+| Multi-Step | $150-500 | $1-5 | 98% |
+| DCA (monthly) | $600-2,400/year | $12-60/year | 95-98% |
+
+### **Gas Optimization Tips**
+
+1. **Use L2s** - Arbitrum, Optimism, Polygon for 99% lower fees
+2. **Set gas conditions** - Wait for low-fee periods
+3. **Batch operations** - Combine multiple actions
+4. **Time strategically** - Execute during off-peak hours (weekends, late night UTC)
+
+---
+
+## 🔐 Crypto UX & Safety Guide
+
+### **Non-Custodial Architecture**
+
+**You Always Control Your Funds**
+- ShiftFlow never holds your assets
+- All swaps execute through SideShift's non-custodial protocol
+- Your private keys stay in your wallet
+
+**How It Works:**
+1. Workflow conditions met → ShiftFlow creates SideShift shift
+2. You receive deposit address
+3. You send funds from your wallet (you control timing)
+4. SideShift processes swap
+5. You receive funds at your destination address
+
+### **Understanding Slippage & Risks**
+
+**What is Slippage?**
+- Difference between expected and actual swap price
+- Caused by market volatility and liquidity
+
+**ShiftFlow's Approach:**
+- SideShift provides fixed-rate quotes (30-second validity)
+- Quotes lock in the rate before you deposit
+- No surprise slippage on execution
+
+**Risk Management:**
+- Start with small test amounts
+- Use price conditions to avoid bad entries
+- Set stop-loss conditions for downside protection
+- Monitor dashboard regularly
+
+### **Funding Your Swaps Safely**
+
+**Step-by-Step:**
+1. **Workflow triggers** → You get notification
+2. **Review details** → Check deposit address, amount, rate
+3. **Verify on SideShift** → Cross-check shift ID on sideshift.ai
+4. **Send funds** → Transfer from your wallet
+5. **Track progress** → Monitor on dashboard
+
+**Safety Checklist:**
+- ✅ Always verify deposit addresses
+- ✅ Start with small test transactions
+- ✅ Double-check network (Ethereum vs. Arbitrum vs. Polygon)
+- ✅ Confirm rate before sending
+- ✅ Keep transaction records
+
+### **Multi-Sig for Teams (Safe Integration)**
+
+**Why Use Safe?**
+- Require multiple approvals for large swaps
+- Protect against single points of failure
+- Perfect for DAO treasuries
+
+**How It Works:**
+1. Workflow creates Safe transaction proposal
+2. Owners review and sign
+3. When threshold met, transaction executes
+4. All on-chain and transparent
+
+**Best Practices:**
+- Use 2-of-3 or 3-of-5 for balance of security and speed
+- Set appropriate thresholds for different amounts
+- Test with small amounts first
+
+### **Security Best Practices**
+
+**Wallet Security:**
+- ✅ Use hardware wallets for large amounts
+- ✅ Never share private keys or seed phrases
+- ✅ Verify all transaction details before signing
+- ✅ Keep software updated
+
+**Workflow Security:**
+- ✅ Test workflows with small amounts first
+- ✅ Set reasonable limits on amounts
+- ✅ Use stop-loss conditions
+- ✅ Monitor execution regularly
+
+**Common Pitfalls to Avoid:**
+- ❌ Don't set overly aggressive conditions
+- ❌ Don't ignore gas costs in profit calculations
+- ❌ Don't forget to fund wallets for gas
+- ❌ Don't skip testing on small amounts
+
+### **Emergency Procedures**
+
+**If Something Goes Wrong:**
+
+1. **Workflow executing incorrectly?**
+   - Deactivate immediately on dashboard
+   - Review conditions and fix
+   - Test with small amount before reactivating
+
+2. **Swap stuck or delayed?**
+   - Check SideShift status page
+   - Contact SideShift support with shift ID
+   - Most delays resolve within 30 minutes
+
+3. **Wrong network or amount?**
+   - Contact SideShift support immediately
+   - Provide shift ID and transaction hash
+   - Do not send additional funds
+
+**Support Resources:**
+- SideShift Support: support@sideshift.ai
+- ShiftFlow Issues: GitHub Issues
+- Community: Discord (link in repo)
+
+---
+
 ## 🛠️ Technical Architecture
 
 ### **Frontend** (`packages/web`)
