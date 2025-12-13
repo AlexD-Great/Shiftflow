@@ -19,6 +19,7 @@ export default function APITestPage() {
   const [quote, setQuote] = useState<any>(null);
   const [orderId, setOrderId] = useState('');
   const [orderStatus, setOrderStatus] = useState<any>(null);
+  const [validationError, setValidationError] = useState('');
 
   const { prices, loading: pricesLoading } = usePriceOracle(['ETH', 'BTC', 'USDT', 'USDC', 'SOL', 'MATIC']);
   const { loading: shiftLoading, error: shiftError, getQuote, getShiftStatus } = useSideShift();
@@ -26,9 +27,10 @@ export default function APITestPage() {
   const handleGetQuote = async () => {
     // Validate inputs
     if (!quoteParams.depositCoin || !quoteParams.settleCoin || !quoteParams.depositAmount) {
-      alert('Please fill in all fields');
+      setValidationError('Please fill in all fields');
       return;
     }
+    setValidationError('');
     
     const result = await getQuote(
       quoteParams.depositCoin.trim().toLowerCase(),
@@ -174,6 +176,12 @@ export default function APITestPage() {
                 >
                   {shiftLoading ? 'Getting Quote...' : 'Get Quote'}
                 </button>
+
+                {validationError && (
+                  <div className="p-4 bg-yellow-900/20 border border-yellow-700 rounded-lg">
+                    <p className="text-yellow-300 text-sm">{validationError}</p>
+                  </div>
+                )}
 
                 {shiftError && (
                   <div className="p-4 bg-red-900/20 border border-red-700 rounded-lg">

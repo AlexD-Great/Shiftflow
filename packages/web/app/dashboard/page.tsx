@@ -12,6 +12,8 @@ export default function Dashboard() {
   const [workflows, setWorkflows] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [actionSuccess, setActionSuccess] = useState<string | null>(null);
 
   // Load workflows from database API
   const fetchWorkflows = async () => {
@@ -56,8 +58,11 @@ export default function Dashboard() {
 
       // Refresh workflows
       await fetchWorkflows();
+      setActionSuccess('Workflow deleted successfully');
+      setTimeout(() => setActionSuccess(null), 3000);
     } catch (err: any) {
-      alert(`Error: ${err.message}`);
+      setActionError(`Error: ${err.message}`);
+      setTimeout(() => setActionError(null), 5000);
     }
   };
 
@@ -77,8 +82,11 @@ export default function Dashboard() {
 
       // Refresh workflows
       await fetchWorkflows();
+      setActionSuccess('Workflow activated successfully');
+      setTimeout(() => setActionSuccess(null), 3000);
     } catch (err: any) {
-      alert(`Error: ${err.message}`);
+      setActionError(`Error: ${err.message}`);
+      setTimeout(() => setActionError(null), 5000);
     }
   };
 
@@ -98,8 +106,11 @@ export default function Dashboard() {
 
       // Refresh workflows
       await fetchWorkflows();
+      setActionSuccess('Workflow deactivated successfully');
+      setTimeout(() => setActionSuccess(null), 3000);
     } catch (err: any) {
-      alert(`Error: ${err.message}`);
+      setActionError(`Error: ${err.message}`);
+      setTimeout(() => setActionError(null), 5000);
     }
   };
 
@@ -141,6 +152,18 @@ export default function Dashboard() {
   return (
     <main className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
       <div className="container mx-auto px-4 py-8">
+        {/* Success/Error Messages */}
+        {actionSuccess && (
+          <div className="mb-6 p-4 bg-green-900/20 border border-green-700 rounded-lg">
+            <p className="text-green-300 text-sm">✓ {actionSuccess}</p>
+          </div>
+        )}
+        {actionError && (
+          <div className="mb-6 p-4 bg-red-900/20 border border-red-700 rounded-lg">
+            <p className="text-red-300 text-sm">✗ {actionError}</p>
+          </div>
+        )}
+
         {/* Header */}
         <div className="mb-8 flex items-center justify-between">
           <div>
