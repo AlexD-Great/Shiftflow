@@ -87,6 +87,7 @@ export default function WorkflowBuilder() {
   // Notification action state
   const [notificationTitle, setNotificationTitle] = useState('Workflow Executed');
   const [notificationMessage, setNotificationMessage] = useState('Your workflow has been executed successfully');
+  const [notificationEmail, setNotificationEmail] = useState('');
 
   // Webhook action state
   const [webhookUrl, setWebhookUrl] = useState('');
@@ -125,6 +126,7 @@ export default function WorkflowBuilder() {
           ...(actionType === 'NOTIFICATION' && {
             title: notificationTitle,
             message: notificationMessage,
+            email: notificationEmail,
           }),
           ...(actionType === 'WEBHOOK' && {
             url: webhookUrl,
@@ -617,9 +619,24 @@ export default function WorkflowBuilder() {
                         className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-blue-500"
                       />
                     </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-300 mb-2">
+                        Email Address (Optional)
+                      </label>
+                      <input
+                        type="email"
+                        value={notificationEmail}
+                        onChange={(e) => setNotificationEmail(e.target.value)}
+                        placeholder="your@email.com"
+                        className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                      />
+                      <p className="text-xs text-slate-500 mt-1">
+                        Receive email alerts when workflow conditions are met
+                      </p>
+                    </div>
                     <div className="p-4 bg-blue-900/20 border border-blue-700 rounded-lg">
                       <p className="text-blue-300 text-sm">
-                        💡 This will send an in-app notification when the workflow executes
+                        💡 Notifications will be sent when the workflow executes (in-app + email if provided)
                       </p>
                     </div>
                   </>
