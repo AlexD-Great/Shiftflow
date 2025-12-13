@@ -452,12 +452,20 @@ export default function WorkflowBuilder() {
                           onChange={(e) => setToken(e.target.value)}
                           className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-blue-500"
                         >
-                          <option value="ETH">ETH</option>
-                          <option value="BTC">BTC</option>
-                          <option value="USDT">USDT</option>
-                          <option value="USDC">USDC</option>
-                          <option value="SOL">SOL</option>
-                          <option value="MATIC">MATIC</option>
+                          <option value="BTC">BTC - Bitcoin</option>
+                          <option value="ETH">ETH - Ethereum</option>
+                          <option value="BNB">BNB - Binance Coin</option>
+                          <option value="SOL">SOL - Solana</option>
+                          <option value="XRP">XRP - Ripple</option>
+                          <option value="ADA">ADA - Cardano</option>
+                          <option value="AVAX">AVAX - Avalanche</option>
+                          <option value="DOT">DOT - Polkadot</option>
+                          <option value="MATIC">MATIC - Polygon</option>
+                          <option value="LINK">LINK - Chainlink</option>
+                          <option value="UNI">UNI - Uniswap</option>
+                          <option value="ATOM">ATOM - Cosmos</option>
+                          <option value="USDT">USDT - Tether</option>
+                          <option value="USDC">USDC - USD Coin</option>
                         </select>
                       </div>
                       <div>

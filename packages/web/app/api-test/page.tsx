@@ -21,7 +21,7 @@ export default function APITestPage() {
   const [orderStatus, setOrderStatus] = useState<any>(null);
   const [validationError, setValidationError] = useState('');
 
-  const { prices, loading: pricesLoading } = usePriceOracle(['ETH', 'BTC', 'USDT', 'USDC', 'SOL', 'MATIC']);
+  const { prices, loading: pricesLoading } = usePriceOracle(['BTC', 'ETH', 'BNB', 'SOL', 'XRP', 'ADA', 'AVAX', 'DOT', 'MATIC', 'LINK', 'UNI', 'ATOM', 'USDT', 'USDC']);
   const { loading: shiftLoading, error: shiftError, getQuote, getShiftStatus } = useSideShift();
 
   const handleGetQuote = async () => {
@@ -78,7 +78,7 @@ export default function APITestPage() {
                   </p>
                 </div>
               ) : (
-                <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {Object.entries(prices).map(([symbol, data]) => {
                     // Skip if data is invalid
                     if (!data || typeof data.price !== 'number') {
@@ -91,21 +91,19 @@ export default function APITestPage() {
                         key={symbol}
                         className="bg-slate-900/50 p-4 rounded-lg border border-slate-700 hover:border-slate-600 transition-colors"
                       >
-                        <div className="flex items-center justify-between">
-                          <div>
+                        <div className="flex flex-col">
+                          <div className="flex items-center justify-between mb-2">
                             <h3 className="text-white font-semibold text-lg">{symbol}</h3>
-                            <p className="text-slate-400 text-sm">
-                              Updated {new Date(data.lastUpdated).toLocaleTimeString()}
-                            </p>
-                          </div>
-                          <div className="text-right">
-                            <p className="text-white font-bold text-xl">
-                              {formatPrice(data.price)}
-                            </p>
                             <p className={`text-sm font-medium ${change.isPositive ? 'text-green-400' : 'text-red-400'}`}>
                               {change.text}
                             </p>
                           </div>
+                          <p className="text-white font-bold text-xl mb-1">
+                            {formatPrice(data.price)}
+                          </p>
+                          <p className="text-slate-400 text-xs">
+                            Updated {new Date(data.lastUpdated).toLocaleTimeString()}
+                          </p>
                         </div>
                       </div>
                     );
@@ -115,7 +113,7 @@ export default function APITestPage() {
 
               <div className="mt-6 p-4 bg-blue-900/20 border border-blue-700 rounded-lg">
                 <p className="text-blue-300 text-sm">
-                  <strong>✓ Real-time data:</strong> Prices update every 60 seconds from CoinGecko API
+                  <strong>✓ Real-time data:</strong> Monitoring 14 cryptocurrencies with prices updating every 60 seconds from CoinGecko API
                 </p>
               </div>
             </div>
