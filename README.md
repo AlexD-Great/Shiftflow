@@ -17,6 +17,21 @@
 
 ---
 
+## 📸 Screenshots
+
+<div align="center">
+  <img src="./screenshots/homepage.png" alt="ShiftFlow Homepage" width="800"/>
+  <p><em>Homepage - Clean landing with value proposition</em></p>
+  
+  <img src="./screenshots/builder.png" alt="Workflow Builder" width="800"/>
+  <p><em>Workflow Builder - Visual interface with live price data and smart dropdowns</em></p>
+  
+  <img src="./screenshots/dashboard.png" alt="Dashboard" width="800"/>
+  <p><em>Dashboard - Real-time monitoring with execution history</em></p>
+</div>
+
+---
+
 ## 💡 The Problem
 
 You want to swap ETH to BTC when the price dips below $3,000—but only when gas fees are low. You could:
@@ -52,26 +67,30 @@ ShiftFlow is a **conditional automation platform** for cross-chain DeFi. You def
 
 ### ✅ **Real API Integrations** (No Mocks!)
 
-- **🌐 SideShift API** - Real cross-chain swaps with 50+ coins
-- **📊 CoinGecko API** - Live cryptocurrency prices, updated every 60 seconds
-- **🔐 Safe SDK** - Multi-sig smart account integration
+- **🌐 SideShift API** - Real cross-chain swaps with 50+ coins across 12+ networks
+- **📊 CoinGecko API** - Live prices for 14 cryptocurrencies, updated every 60 seconds
+- **🔐 Safe SDK** - Multi-sig smart account integration for team treasuries
 - **⛓️ Blockchain Data** - Real wallet connection via Wagmi + Viem
+- **📧 Notification System** - Email and webhook alerts when workflows execute
 
 ### 🎨 **Beautiful, Functional UI**
 
-- **Workflow Builder** - Visual interface with live price data
-- **Real-Time Dashboard** - Monitor your active workflows
-- **API Test Page** - See all integrations in action
+- **Workflow Builder** - Visual interface with live price data and smart dropdowns
+- **Real-Time Dashboard** - Monitor active workflows with execution history
+- **API Test Page** - See all 14 cryptocurrencies with live prices in responsive grid
 - **Template Library** - 8 pre-built strategies to get started
 - **Responsive Design** - Works on desktop, tablet, and mobile
+- **Smart Validation** - Dropdown selectors prevent invalid coin/network combinations
 
 ### 🔧 **Production-Ready Infrastructure**
 
-- **TypeScript** - Type-safe throughout
-- **Next.js 15** - Latest React framework
-- **Vercel Deployment** - Fast, reliable hosting
-- **Error Handling** - Graceful failures with clear messages
-- **Loading States** - Professional UX everywhere
+- **TypeScript** - 100% type-safe codebase
+- **Next.js 15** - Latest React framework with App Router
+- **PostgreSQL + Prisma** - Database persistence for workflows and execution history
+- **Vercel Deployment** - Fast, reliable hosting with auto-deploy
+- **Error Handling** - Styled error/success messages (no alerts!)
+- **Cron Monitoring** - Automated workflow checking every 60 seconds
+- **Backend API Proxy** - Secure SideShift and CoinGecko integration
 
 ---
 
@@ -599,7 +618,7 @@ MIT License - feel free to use this code for your own projects!
 
 **⚡ ShiftFlow - Smart Automation for Cross-Chain DeFi ⚡**
 
-Made with ❤️ for the SideShift Hackathon 2024
+Made with ❤️ for the SideShift Hackathon 2025
 
 [Live Demo](https://shiftflow-web.vercel.app/) • [GitHub](https://github.com/AlexD-Great/Shiftflow) • [Demo Video](#)
 
