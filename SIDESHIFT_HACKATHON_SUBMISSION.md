@@ -676,7 +676,7 @@ ShiftFlow is a **production-ready conditional automation platform** that makes S
 
 **⚡ ShiftFlow - Smart Automation for Cross-Chain DeFi ⚡**
 
-Built with ❤️ for the SideShift Hackathon 2024
+Built with ❤️ for the SideShift Hackathon 2025
 
 [Live Demo](https://shiftflow-web.vercel.app/) • [GitHub](https://github.com/AlexD-Great/Shiftflow) • [Documentation](https://github.com/AlexD-Great/Shiftflow#readme)
 
