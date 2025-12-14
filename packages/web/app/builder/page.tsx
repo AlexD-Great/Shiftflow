@@ -23,16 +23,25 @@ export default function WorkflowBuilder() {
   const [sessionId, setSessionId] = useState<string>('');
   const [showGuestSave, setShowGuestSave] = useState(false);
   const [isSavingGuest, setIsSavingGuest] = useState(false);
+  const [workflowPreview, setWorkflowPreview] = useState<string>('');
 
   // Generate or retrieve session ID
   useEffect(() => {
-    let sid = localStorage.getItem('shiftflow_session_id');
-    if (!sid) {
-      sid = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-      localStorage.setItem('shiftflow_session_id', sid);
+    if (typeof window !== 'undefined') {
+      let sid = localStorage.getItem('shiftflow_session_id');
+      if (!sid) {
+        sid = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        localStorage.setItem('shiftflow_session_id', sid);
+      }
+      setSessionId(sid);
     }
-    setSessionId(sid);
   }, []);
+
+  // Generate preview on mount and when key fields change
+  useEffect(() => {
+    const preview = generateWorkflowPreview();
+    setWorkflowPreview(preview);
+  }, [workflowName, conditionType, actionType, token, threshold, depositCoin, settleCoin, amount]);
 
   // Load template from localStorage on mount
   useEffect(() => {
@@ -155,8 +164,10 @@ export default function WorkflowBuilder() {
     return JSON.stringify(workflow, null, 2);
   };
 
-  // Track analytics event
+  // Track analytics event (only on client side)
   const trackAnalytics = async (eventType: string, workflowData: any) => {
+    if (typeof window === 'undefined') return; // Skip during SSR
+    
     try {
       await fetch('/api/analytics', {
         method: 'POST',
@@ -173,21 +184,23 @@ export default function WorkflowBuilder() {
     }
   };
 
-  // Handle preview generation with analytics
-  const handleGeneratePreview = () => {
-    const preview = generateWorkflowPreview();
-    const workflowData = JSON.parse(preview);
-    
-    // Track preview generation
-    trackAnalytics('preview_generated', workflowData);
-    
-    // Show guest save option if not logged in
-    if (!session) {
-      setShowGuestSave(true);
+  // Track preview generation when preview changes
+  useEffect(() => {
+    if (workflowPreview && sessionId) {
+      try {
+        const workflowData = JSON.parse(workflowPreview);
+        trackAnalytics('preview_generated', workflowData);
+        
+        // Show guest save option if not logged in
+        if (!session) {
+          setShowGuestSave(true);
+        }
+      } catch (error) {
+        // Ignore parse errors
+      }
     }
-    
-    return preview;
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [workflowPreview, sessionId, session]);
 
   // Save workflow as guest
   const handleGuestSave = async () => {
@@ -911,7 +924,7 @@ export default function WorkflowBuilder() {
               <div className="mb-4">
                 <h3 className="text-sm font-medium text-slate-400 mb-2">Workflow Preview</h3>
                 <pre className="bg-slate-900 p-4 rounded-lg text-xs text-slate-300 overflow-x-auto max-h-96">
-                  {handleGeneratePreview()}
+                  {workflowPreview}
                 </pre>
               </div>
 
