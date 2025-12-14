@@ -412,19 +412,19 @@ export default function WorkflowBuilder() {
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8 max-w-7xl">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-white mb-2">Workflow Builder</h1>
-          <p className="text-slate-400">Create automated cross-chain workflows</p>
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-2">Workflow Builder</h1>
+          <p className="text-sm sm:text-base text-slate-400">Create automated cross-chain workflows</p>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
           {/* Builder Form */}
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             {/* Basic Info */}
-            <div className="bg-slate-800 p-6 rounded-lg border border-slate-700">
-              <h2 className="text-xl font-semibold text-white mb-4">Basic Information</h2>
+            <div className="bg-slate-800 p-4 sm:p-6 rounded-lg border border-slate-700">
+              <h2 className="text-lg sm:text-xl font-semibold text-white mb-3 sm:mb-4">Basic Information</h2>
               
               <div className="space-y-4">
                 <div>
@@ -470,8 +470,8 @@ export default function WorkflowBuilder() {
             </div>
 
             {/* Condition */}
-            <div className="bg-slate-800 p-6 rounded-lg border border-slate-700">
-              <h2 className="text-xl font-semibold text-white mb-4">Condition (When)</h2>
+            <div className="bg-slate-800 p-4 sm:p-6 rounded-lg border border-slate-700">
+              <h2 className="text-lg sm:text-xl font-semibold text-white mb-3 sm:mb-4">Condition (When)</h2>
               
               <div className="space-y-4">
                 <div>
@@ -493,7 +493,7 @@ export default function WorkflowBuilder() {
 
                 {conditionType === 'GAS_THRESHOLD' && (
                   <>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-medium text-slate-300 mb-2">
                           Network
@@ -589,7 +589,7 @@ export default function WorkflowBuilder() {
                       </div>
                     )}
 
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-medium text-slate-300 mb-2">
                           Token
@@ -652,8 +652,8 @@ export default function WorkflowBuilder() {
             </div>
 
             {/* Action */}
-            <div className="bg-slate-800 p-6 rounded-lg border border-slate-700">
-              <h2 className="text-xl font-semibold text-white mb-4">Action (Then)</h2>
+            <div className="bg-slate-800 p-4 sm:p-6 rounded-lg border border-slate-700">
+              <h2 className="text-lg sm:text-xl font-semibold text-white mb-3 sm:mb-4">Action (Then)</h2>
               
               <div className="space-y-4">
                 <div>
@@ -674,7 +674,7 @@ export default function WorkflowBuilder() {
 
                 {actionType === 'CROSS_CHAIN_SWAP' && (
                   <>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-medium text-slate-300 mb-2">
                           From Coin
@@ -721,7 +721,7 @@ export default function WorkflowBuilder() {
                         </select>
                       </div>
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-medium text-slate-300 mb-2">
                           To Coin
@@ -907,8 +907,8 @@ export default function WorkflowBuilder() {
 
           {/* Preview */}
           <div className="lg:sticky lg:top-8 h-fit">
-            <div className="bg-slate-800 p-6 rounded-lg border border-slate-700">
-              <h2 className="text-xl font-semibold text-white mb-4">Workflow Preview</h2>
+            <div className="bg-slate-800 p-4 sm:p-6 rounded-lg border border-slate-700">
+              <h2 className="text-lg sm:text-xl font-semibold text-white mb-3 sm:mb-4">Workflow Preview</h2>
               
               <div className="mb-4 p-4 bg-blue-900/20 border border-blue-700 rounded-lg">
                 <p className="text-blue-300 text-sm">
@@ -982,8 +982,8 @@ export default function WorkflowBuilder() {
             </div>
 
             {/* Features */}
-            <div className="mt-6 bg-slate-800 p-6 rounded-lg border border-slate-700">
-              <h3 className="text-lg font-semibold text-white mb-3">Available Features</h3>
+            <div className="mt-4 sm:mt-6 bg-slate-800 p-4 sm:p-6 rounded-lg border border-slate-700">
+              <h3 className="text-base sm:text-lg font-semibold text-white mb-3">Available Features</h3>
               <ul className="space-y-2 text-sm text-slate-400">
                 <li>✅ Smart Account (Safe) integration</li>
                 <li>✅ Multi-condition workflows (AND/OR)</li>
