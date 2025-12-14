@@ -37,12 +37,6 @@ export default function WorkflowBuilder() {
     }
   }, []);
 
-  // Generate preview on mount and when key fields change
-  useEffect(() => {
-    const preview = generateWorkflowPreview();
-    setWorkflowPreview(preview);
-  }, [workflowName, conditionType, actionType, token, threshold, depositCoin, settleCoin, amount]);
-
   // Load template from localStorage on mount
   useEffect(() => {
     const templateData = localStorage.getItem('selectedTemplate');
@@ -115,6 +109,13 @@ export default function WorkflowBuilder() {
   const [webhookUrl, setWebhookUrl] = useState('');
   const [webhookMethod, setWebhookMethod] = useState<'POST' | 'GET'>('POST');
   const [webhookBody, setWebhookBody] = useState('{}');
+
+  // Generate preview on mount and when key fields change
+  useEffect(() => {
+    const preview = generateWorkflowPreview();
+    setWorkflowPreview(preview);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [workflowName, conditionType, actionType, token, threshold, depositCoin, settleCoin, amount]);
 
   const generateWorkflowPreview = () => {
     const workflow = {
