@@ -174,6 +174,14 @@ export default function Home() {
 
         {/* Footer */}
         <footer className="mt-24 text-center text-slate-500">
+          <div className="mb-4">
+            <a 
+              href="/admin/test-data" 
+              className="text-slate-600 hover:text-slate-400 text-sm transition-colors"
+            >
+              📊 Admin Dashboard
+            </a>
+          </div>
           <p>© 2025 ShiftFlow. All rights reserved.</p>
         </footer>
       </div>

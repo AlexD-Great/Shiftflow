@@ -68,18 +68,21 @@ export default function TestDataPage() {
       <nav className="bg-slate-900 border-b border-slate-800">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <Link href="/" className="text-2xl font-bold text-white">
+            <Link href="/" className="text-2xl font-bold text-white hover:text-blue-400 transition-colors">
               ⚡ ShiftFlow
             </Link>
-            <div className="flex gap-4">
-              <Link href="/builder" className="text-slate-300 hover:text-white transition-colors">
-                Builder
+            <div className="flex gap-6">
+              <Link href="/builder" className="text-slate-300 hover:text-white transition-colors font-medium">
+                🔧 Builder
               </Link>
-              <Link href="/dashboard" className="text-slate-300 hover:text-white transition-colors">
-                Dashboard
+              <Link href="/dashboard" className="text-slate-300 hover:text-white transition-colors font-medium">
+                📊 Dashboard
               </Link>
-              <Link href="/admin/test-data" className="text-blue-400 font-medium">
-                Test Data
+              <Link href="/templates" className="text-slate-300 hover:text-white transition-colors font-medium">
+                📚 Templates
+              </Link>
+              <Link href="/admin/test-data" className="text-blue-400 font-semibold border-b-2 border-blue-400">
+                📈 Test Data
               </Link>
             </div>
           </div>

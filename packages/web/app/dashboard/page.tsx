@@ -171,6 +171,12 @@ export default function Dashboard() {
             <p className="text-slate-400">Monitor your automated workflows</p>
           </div>
           <div className="flex gap-3">
+            <a
+              href="/admin/test-data"
+              className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors text-sm"
+            >
+              📊 Test Data
+            </a>
             {!session ? (
               <div className="px-6 py-3 bg-slate-700 text-slate-400 rounded-lg">
                 Sign in to view workflows
