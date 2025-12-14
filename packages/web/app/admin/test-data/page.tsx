@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Header from '@/components/Header';
+import Link from 'next/link';
 
 interface GuestWorkflow {
   id: string;
@@ -64,7 +64,27 @@ export default function TestDataPage() {
 
   return (
     <div className="min-h-screen bg-slate-950">
-      <Header />
+      {/* Simple Navigation */}
+      <nav className="bg-slate-900 border-b border-slate-800">
+        <div className="max-w-7xl mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <Link href="/" className="text-2xl font-bold text-white">
+              ⚡ ShiftFlow
+            </Link>
+            <div className="flex gap-4">
+              <Link href="/builder" className="text-slate-300 hover:text-white transition-colors">
+                Builder
+              </Link>
+              <Link href="/dashboard" className="text-slate-300 hover:text-white transition-colors">
+                Dashboard
+              </Link>
+              <Link href="/admin/test-data" className="text-blue-400 font-medium">
+                Test Data
+              </Link>
+            </div>
+          </div>
+        </div>
+      </nav>
       
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="mb-8">
