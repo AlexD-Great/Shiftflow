@@ -20,6 +20,19 @@ export default function WorkflowBuilder() {
   const [deployStatus, setDeployStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [statusMessage, setStatusMessage] = useState('');
   const [isDeploying, setIsDeploying] = useState(false);
+  const [sessionId, setSessionId] = useState<string>('');
+  const [showGuestSave, setShowGuestSave] = useState(false);
+  const [isSavingGuest, setIsSavingGuest] = useState(false);
+
+  // Generate or retrieve session ID
+  useEffect(() => {
+    let sid = localStorage.getItem('shiftflow_session_id');
+    if (!sid) {
+      sid = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      localStorage.setItem('shiftflow_session_id', sid);
+    }
+    setSessionId(sid);
+  }, []);
 
   // Load template from localStorage on mount
   useEffect(() => {
@@ -140,6 +153,126 @@ export default function WorkflowBuilder() {
     };
 
     return JSON.stringify(workflow, null, 2);
+  };
+
+  // Track analytics event
+  const trackAnalytics = async (eventType: string, workflowData: any) => {
+    try {
+      await fetch('/api/analytics', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          eventType,
+          workflowData,
+          sessionId,
+          userId: session?.user ? (session.user as any).id : undefined,
+        }),
+      });
+    } catch (error) {
+      console.error('Analytics tracking error:', error);
+    }
+  };
+
+  // Handle preview generation with analytics
+  const handleGeneratePreview = () => {
+    const preview = generateWorkflowPreview();
+    const workflowData = JSON.parse(preview);
+    
+    // Track preview generation
+    trackAnalytics('preview_generated', workflowData);
+    
+    // Show guest save option if not logged in
+    if (!session) {
+      setShowGuestSave(true);
+    }
+    
+    return preview;
+  };
+
+  // Save workflow as guest
+  const handleGuestSave = async () => {
+    if (!workflowName.trim()) {
+      setDeployStatus('error');
+      setStatusMessage('Please enter a workflow name');
+      setTimeout(() => setDeployStatus('idle'), 3000);
+      return;
+    }
+
+    setIsSavingGuest(true);
+
+    try {
+      const workflowData = {
+        name: workflowName,
+        description: `Auto-generated workflow`,
+        conditions: [
+          {
+            type: conditionType,
+            ...(conditionType === 'PRICE_THRESHOLD' && {
+              token,
+              comparison,
+              threshold: parseFloat(threshold),
+              currency: 'USD',
+            }),
+            ...(conditionType === 'GAS_THRESHOLD' && {
+              network: gasNetwork,
+              comparison: gasComparison,
+              threshold: parseFloat(gasThreshold),
+            }),
+          },
+        ],
+        actions: [
+          {
+            type: actionType,
+            ...(actionType === 'CROSS_CHAIN_SWAP' && {
+              depositCoin,
+              depositNetwork,
+              settleCoin,
+              settleNetwork,
+              amount: parseFloat(amount),
+              settleAddress,
+            }),
+            ...(actionType === 'NOTIFICATION' && {
+              title: notificationTitle,
+              message: notificationMessage,
+              email: notificationEmail,
+            }),
+            ...(actionType === 'WEBHOOK' && {
+              url: webhookUrl,
+              method: webhookMethod,
+              body: JSON.parse(webhookBody || '{}'),
+            }),
+          },
+        ],
+      };
+
+      const response = await fetch('/api/guest-workflows', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sessionId,
+          ...workflowData,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to save workflow');
+      }
+
+      // Track guest save
+      trackAnalytics('guest_saved', workflowData);
+
+      setDeployStatus('success');
+      setStatusMessage('✅ Workflow saved! Thank you for testing. Sign in to activate it.');
+      setShowGuestSave(false);
+      setTimeout(() => setDeployStatus('idle'), 5000);
+    } catch (error) {
+      console.error('Error saving guest workflow:', error);
+      setDeployStatus('error');
+      setStatusMessage('Failed to save workflow. Please try again.');
+      setTimeout(() => setDeployStatus('idle'), 3000);
+    } finally {
+      setIsSavingGuest(false);
+    }
   };
 
   const handleDeploy = async () => {
@@ -778,9 +911,28 @@ export default function WorkflowBuilder() {
               <div className="mb-4">
                 <h3 className="text-sm font-medium text-slate-400 mb-2">Workflow Preview</h3>
                 <pre className="bg-slate-900 p-4 rounded-lg text-xs text-slate-300 overflow-x-auto max-h-96">
-                  {generateWorkflowPreview()}
+                  {handleGeneratePreview()}
                 </pre>
               </div>
+
+              {/* Guest Save Option */}
+              {showGuestSave && !session && (
+                <div className="mb-4 p-4 bg-blue-900/20 border border-blue-700 rounded-lg">
+                  <p className="text-blue-300 text-sm mb-3">
+                    💡 <strong>Testing ShiftFlow?</strong> Save your workflow to help us improve!
+                  </p>
+                  <button 
+                    onClick={handleGuestSave}
+                    disabled={isSavingGuest}
+                    className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-600 text-white rounded-lg font-medium transition-colors"
+                  >
+                    {isSavingGuest ? 'Saving...' : '💾 Save Test Workflow (No Sign-In Required)'}
+                  </button>
+                  <p className="text-xs text-slate-400 mt-2">
+                    Your workflow will be saved anonymously for testing feedback.
+                  </p>
+                </div>
+              )}
 
               <div className="space-y-2">
                 <button 

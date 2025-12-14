@@ -372,3 +372,52 @@ model SideShiftOrder {
   @@index([status])
   @@index([createdAt])
 }
+
+// ============================================
+// GUEST WORKFLOWS & ANALYTICS
+// ============================================
+
+model GuestWorkflow {
+  id              String   @id @default(cuid())
+  sessionId       String   // Browser session ID
+  
+  // Workflow data
+  name            String
+  description     String?
+  conditions      Json
+  actions         Json
+  
+  // Metadata
+  userAgent       String?
+  ipAddress       String?
+  
+  // Timestamps
+  createdAt       DateTime @default(now())
+  
+  @@index([sessionId])
+  @@index([createdAt])
+}
+
+model WorkflowAnalytics {
+  id              String   @id @default(cuid())
+  
+  // Event tracking
+  eventType       String   // 'preview_generated', 'guest_saved', 'workflow_created'
+  
+  // Workflow data snapshot
+  workflowData    Json
+  
+  // User context
+  sessionId       String?
+  userId          String?
+  userAgent       String?
+  ipAddress       String?
+  
+  // Timestamps
+  createdAt       DateTime @default(now())
+  
+  @@index([eventType])
+  @@index([sessionId])
+  @@index([userId])
+  @@index([createdAt])
+}
