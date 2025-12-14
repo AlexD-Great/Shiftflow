@@ -418,28 +418,80 @@ Every API call you see is real. The prices are live. The quotes are actual. No s
 ## 🗺️ Roadmap
 
 ### **✅ Phase 1: Foundation** (Completed)
-- ✅ Core workflow builder UI
+- ✅ Core workflow builder UI with responsive design
 - ✅ Real API integrations (SideShift, CoinGecko)
-- ✅ Safe SDK integration
-- ✅ Live price display
-- ✅ Dashboard monitoring
-- ✅ Template library
+- ✅ Safe SDK integration for multi-sig
+- ✅ Live price display with smart dropdowns
+- ✅ Dashboard monitoring with real-time updates
+- ✅ Template library (8 pre-built strategies)
+- ✅ PostgreSQL database with Prisma ORM
+- ✅ User authentication (NextAuth)
+- ✅ Guest workflow tracking for testing
+- ✅ Analytics system for user engagement
 
-### **🚧 Phase 2: Production Features** (Next Wave)
-- 🔄 Persistent storage (database)
-- 🔄 User accounts & authentication
-- 🔄 Actual transaction execution
-- 🔄 Email/webhook notifications
-- 🔄 Execution history & analytics
-- 🔄 Workflow editing & management
+### **🚧 Phase 2: Community-Driven Features** (In Progress)
+
+Based on feedback from beta testers during the SideShift Hackathon:
+
+**High Priority:**
+- 🔄 **Flexible Condition Logic (AND/OR)** - Allow users to set primary conditions with optional secondary conditions
+  - Example: "Swap when price is right, but prefer low gas (don't block trade)"
+  - Prevents missing profitable opportunities due to non-critical conditions
+- 🔄 **Condition Priority System** - Set which conditions are must-have vs. nice-to-have
+- 🔄 **Recurring Payments (Salary Feature)** - Time-based automated payments
+  - Use cases: DAO contributor salaries, freelancer payments, subscription services
+  - Example: "Send 0.5 ETH to contributor wallet every 1st of month"
+- 🔄 **Enhanced Mobile Experience** - Continue improving mobile UI based on tester feedback
+- 🔄 **Actual Transaction Execution** - Full automation with wallet integration
+- 🔄 **Email/Discord/Telegram Notifications** - Multi-channel alerts
+
+**Medium Priority:**
+- 📅 **Multi-Step Workflows** - Chain multiple actions together (swap → stake → notify)
+- 📊 **Portfolio Rebalancing** - Automated portfolio management based on drift thresholds
+- 💰 **DCA Strategies** - Dollar-cost averaging with customizable schedules
+- 📈 **Execution History & Analytics** - Detailed performance tracking
+- ⚙️ **Workflow Editing & Management** - Update existing workflows without recreating
 
 ### **🔮 Phase 3: Advanced Features** (Future)
-- 📅 Advanced scheduling (cron-like)
-- 🤖 AI-powered strategy suggestions
-- 📊 Backtesting engine
-- 🔗 More DEX integrations
-- 📱 Mobile app
-- 🌐 Multi-chain expansion
+
+**Trading & Strategy:**
+- 📉 **Limit Orders** - Traditional limit order functionality with cross-chain execution
+- 🛡️ **Stop Loss/Take Profit** - Automated risk management
+- 🌾 **Yield Optimization** - Auto-compound and yield farming strategies
+- 🤖 **AI-Powered Strategy Suggestions** - Machine learning for optimal conditions
+- 📊 **Backtesting Engine** - Test strategies against historical data
+- 👥 **Social Trading** - Follow and copy successful workflows (privacy-preserving)
+
+**Infrastructure & Expansion:**
+- 🔗 **More DEX Integrations** - Beyond SideShift (1inch, Uniswap, Curve)
+- ⛽ **Advanced Gas Optimization** - Better gas estimation and timing algorithms
+- 🌐 **Multi-Chain Expansion** - Support for more networks beyond current 12+
+- 📱 **Mobile App** - Native iOS and Android applications
+- 🏪 **Workflow Marketplace** - Community-contributed templates and strategies
+- 🔌 **Developer API** - Allow third-party integrations
+
+**Community & Governance:**
+- 🗳️ **DAO Governance** - Community voting on features and priorities
+- 💎 **Token Economics** - Potential token for premium features and governance
+- 🏆 **Reputation System** - Reward successful strategy creators
+- 📚 **Educational Content** - Tutorials, guides, and best practices
+
+---
+
+### **📊 Community Feedback Integration**
+
+We actively listen to our users! Recent additions based on beta testing:
+
+- ✅ **Guest Workflow Saving** - Test without sign-in (implemented)
+- ✅ **Analytics Tracking** - Understand user behavior (implemented)
+- ✅ **Mobile Responsiveness** - Fixed UI issues on Android (implemented)
+- 🔄 **AND/OR Logic** - Flexible condition combinations (in progress)
+- 🔄 **Salary Feature** - Recurring payments for DAOs (in progress)
+
+**Want to influence the roadmap?** Share your feedback:
+- 💬 [GitHub Discussions](https://github.com/AlexD-Great/Shiftflow/discussions)
+- 🐛 [Report Issues](https://github.com/AlexD-Great/Shiftflow/issues)
+- 📧 Contact: [Your Email/Discord]
 
 ---
 
