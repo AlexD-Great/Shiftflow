@@ -52,30 +52,30 @@ export default function SafeDemoPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white p-8">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white p-4 sm:p-6 lg:p-8">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <a href="/" className="text-blue-400 hover:text-blue-300">
+        <div className="mb-6 sm:mb-8">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 mb-4">
+            <a href="/" className="text-blue-400 hover:text-blue-300 text-sm sm:text-base">
               ← Back to Home
             </a>
             <a
               href="/demo/safe-real"
-              className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium transition-colors"
+              className="px-3 sm:px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-xs sm:text-sm font-medium transition-colors whitespace-nowrap"
             >
               Try Real Demo →
             </a>
           </div>
-          <h1 className="text-4xl font-bold mb-2">Smart Account Demo (Simulated)</h1>
-          <p className="text-slate-400 text-lg">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-2">Smart Account Demo (Simulated)</h1>
+          <p className="text-slate-400 text-sm sm:text-base lg:text-lg">
             See how ShiftFlow executes workflows through Safe (Gnosis Safe) multi-sig accounts
           </p>
         </div>
 
         {/* Progress Steps */}
-        <div className="mb-12">
-          <div className="flex items-center justify-between max-w-4xl mx-auto">
+        <div className="mb-8 sm:mb-12 overflow-x-auto">
+          <div className="flex items-center justify-between min-w-max sm:min-w-0 max-w-4xl mx-auto px-2">
             {[
               { num: 1, label: 'Setup' },
               { num: 2, label: 'Propose' },
@@ -86,7 +86,7 @@ export default function SafeDemoPage() {
               <div key={s.num} className="flex items-center">
                 <div className="flex flex-col items-center">
                   <div
-                    className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg transition-all ${
+                    className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center font-bold text-base sm:text-lg transition-all ${
                       step >= s.num
                         ? 'bg-blue-600 text-white'
                         : 'bg-slate-700 text-slate-400'
@@ -94,11 +94,11 @@ export default function SafeDemoPage() {
                   >
                     {step > s.num ? '✓' : s.num}
                   </div>
-                  <span className="text-sm mt-2 text-slate-400">{s.label}</span>
+                  <span className="text-xs sm:text-sm mt-2 text-slate-400 whitespace-nowrap">{s.label}</span>
                 </div>
                 {i < 4 && (
                   <div
-                    className={`w-24 h-1 mx-2 transition-all ${
+                    className={`w-12 sm:w-16 md:w-24 h-1 mx-1 sm:mx-2 transition-all ${
                       step > s.num ? 'bg-blue-600' : 'bg-slate-700'
                     }`}
                   />

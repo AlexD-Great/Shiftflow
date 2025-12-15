@@ -1,29 +1,29 @@
 export default function Home() {
   return (
     <main className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-      <div className="container mx-auto px-4 py-16">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-16 max-w-7xl">
         {/* Beta Banner */}
-        <div className="mb-8 flex justify-center">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-yellow-600/20 to-orange-600/20 border border-yellow-500/30 rounded-full">
-            <span className="text-yellow-400 text-sm font-medium">🚧 BETA</span>
-            <span className="text-slate-300 text-sm">Currently in testing phase - Join our beta program!</span>
+        <div className="mb-6 sm:mb-8 flex justify-center">
+          <div className="inline-flex items-center gap-2 px-3 sm:px-4 py-2 bg-gradient-to-r from-yellow-600/20 to-orange-600/20 border border-yellow-500/30 rounded-full">
+            <span className="text-yellow-400 text-xs sm:text-sm font-medium">🚧 BETA</span>
+            <span className="text-slate-300 text-xs sm:text-sm">Currently in testing phase - Join our beta program!</span>
           </div>
         </div>
 
         {/* Header */}
-        <header className="text-center mb-20">
+        <header className="text-center mb-12 sm:mb-20">
           <div className="mb-6">
             <div className="inline-block p-4 bg-blue-600/10 rounded-2xl mb-4">
               <div className="text-6xl">⚡</div>
             </div>
           </div>
-          <h1 className="text-6xl md:text-7xl font-bold text-white mb-6 bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-600">
+          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-6 bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-600">
             ShiftFlow
           </h1>
-          <p className="text-2xl text-slate-300 mb-4 font-light">
+          <p className="text-lg sm:text-xl md:text-2xl text-slate-300 mb-4 font-light">
             Automate Your Cross-Chain DeFi Strategy
           </p>
-          <p className="text-lg text-slate-400 mb-12 max-w-2xl mx-auto">
+          <p className="text-base sm:text-lg text-slate-400 mb-8 sm:mb-12 max-w-2xl mx-auto px-4">
             Set conditions, define actions, and let ShiftFlow execute your workflows automatically across multiple blockchains
           </p>
           <div className="flex gap-4 justify-center flex-wrap">
@@ -70,15 +70,15 @@ export default function Home() {
         </section>
 
         {/* Examples */}
-        <section className="max-w-4xl mx-auto mb-16">
-          <h2 className="text-3xl font-bold text-white mb-8">Example Workflows</h2>
-          <div className="grid md:grid-cols-2 gap-6">
-            <div className="bg-slate-800 p-6 rounded-lg border border-slate-700">
-              <h3 className="text-xl font-semibold text-white mb-3">Price-Based Triggers</h3>
-              <p className="text-slate-400 mb-4">
+        <section className="max-w-4xl mx-auto mb-12 sm:mb-16">
+          <h2 className="text-2xl sm:text-3xl font-bold text-white mb-6 sm:mb-8">Example Workflows</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+            <div className="bg-slate-800 p-4 sm:p-6 rounded-lg border border-slate-700">
+              <h3 className="text-lg sm:text-xl font-semibold text-white mb-3">Price-Based Triggers</h3>
+              <p className="text-sm sm:text-base text-slate-400 mb-4">
                 Automatically execute swaps when prices hit your targets
               </p>
-              <pre className="bg-slate-900 p-4 rounded text-sm text-slate-300 overflow-x-auto">
+              <pre className="bg-slate-900 p-3 sm:p-4 rounded text-xs sm:text-sm text-slate-300 overflow-x-auto">
 {`whenPriceIs('ETH', 'below', 3000)
   .thenSwap({
     from: 'eth/arbitrum',
@@ -87,12 +87,12 @@ export default function Home() {
               </pre>
             </div>
 
-            <div className="bg-slate-800 p-6 rounded-lg border border-slate-700">
-              <h3 className="text-xl font-semibold text-white mb-3">Treasury Management</h3>
-              <p className="text-slate-400 mb-4">
+            <div className="bg-slate-800 p-4 sm:p-6 rounded-lg border border-slate-700">
+              <h3 className="text-lg sm:text-xl font-semibold text-white mb-3">Treasury Management</h3>
+              <p className="text-sm sm:text-base text-slate-400 mb-4">
                 Rebalance holdings based on market conditions
               </p>
-              <pre className="bg-slate-900 p-4 rounded text-sm text-slate-300 overflow-x-auto">
+              <pre className="bg-slate-900 p-3 sm:p-4 rounded text-xs sm:text-sm text-slate-300 overflow-x-auto">
 {`whenPriceIs('BTC', 'above', 100000)
   .thenSwap({
     from: 'btc/bitcoin',
@@ -104,10 +104,10 @@ export default function Home() {
         </section>
 
         {/* Features */}
-        <section className="max-w-4xl mx-auto mb-16">
-          <h2 className="text-3xl font-bold text-white mb-8">How It Works</h2>
-          <div className="grid md:grid-cols-3 gap-6">
-            <div className="bg-slate-800 p-6 rounded-lg border border-slate-700">
+        <section className="max-w-4xl mx-auto mb-12 sm:mb-16">
+          <h2 className="text-2xl sm:text-3xl font-bold text-white mb-6 sm:mb-8">How It Works</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
+            <div className="bg-slate-800 p-4 sm:p-6 rounded-lg border border-slate-700">
               <h3 className="text-lg font-semibold text-white mb-3">Backend Engine</h3>
               <ul className="text-slate-400 space-y-2">
                 <li>• Monitors conditions</li>
