@@ -136,7 +136,7 @@ export default function Dashboard() {
       case 'failed':
         return 'text-red-400 bg-red-900/20 border-red-700';
       default:
-        return 'text-slate-400 bg-slate-900/20 border-slate-700';
+        return 'text-slate-300 bg-black/30/20 border-white/10';
     }
   };
 
@@ -150,7 +150,7 @@ export default function Dashboard() {
   };
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+    <main className="min-h-screen bg-[#05080f]">
       <div className="container mx-auto px-4 py-8">
         {/* Success/Error Messages */}
         {actionSuccess && (
@@ -168,7 +168,7 @@ export default function Dashboard() {
         <div className="mb-8 flex items-center justify-between">
           <div>
             <h1 className="text-4xl font-bold text-white mb-2">Dashboard</h1>
-            <p className="text-slate-400">Monitor your automated workflows</p>
+            <p className="text-slate-300">Monitor your automated workflows</p>
           </div>
           <div className="flex gap-3">
             <a
@@ -178,7 +178,7 @@ export default function Dashboard() {
               📊 Test Data
             </a>
             {!session ? (
-              <div className="px-6 py-3 bg-slate-700 text-slate-400 rounded-lg">
+              <div className="px-6 py-3 bg-slate-700 text-slate-300 rounded-lg">
                 Sign in to view workflows
               </div>
             ) : loading ? (
@@ -199,30 +199,30 @@ export default function Dashboard() {
 
         {/* Stats */}
         <div className="grid md:grid-cols-4 gap-6 mb-8">
-          <div className="bg-slate-800 p-6 rounded-lg border border-slate-700">
+          <div className="bg-white/[0.03] p-6 rounded-2xl border border-white/10 backdrop-blur-xl">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-slate-400 text-sm">Total Workflows</span>
+              <span className="text-slate-300 text-sm">Total Workflows</span>
               <span className="w-2 h-2 rounded-full bg-blue-400"></span>
             </div>
             <div className="text-3xl font-bold text-white">{workflows.length}</div>
           </div>
 
-          <div className="bg-slate-800 p-6 rounded-lg border border-slate-700">
-            <div className="text-slate-400 text-sm mb-2">Active</div>
+          <div className="bg-white/[0.03] p-6 rounded-2xl border border-white/10 backdrop-blur-xl">
+            <div className="text-slate-300 text-sm mb-2">Active</div>
             <div className="text-3xl font-bold text-green-400">
               {workflows.filter(w => w.status === 'ACTIVE').length}
             </div>
           </div>
 
-          <div className="bg-slate-800 p-6 rounded-lg border border-slate-700">
-            <div className="text-slate-400 text-sm mb-2">Draft</div>
+          <div className="bg-white/[0.03] p-6 rounded-2xl border border-white/10 backdrop-blur-xl">
+            <div className="text-slate-300 text-sm mb-2">Draft</div>
             <div className="text-3xl font-bold text-yellow-400">
               {workflows.filter(w => w.status === 'DRAFT').length}
             </div>
           </div>
 
-          <div className="bg-slate-800 p-6 rounded-lg border border-slate-700">
-            <div className="text-slate-400 text-sm mb-2">Total Executions</div>
+          <div className="bg-white/[0.03] p-6 rounded-2xl border border-white/10 backdrop-blur-xl">
+            <div className="text-slate-300 text-sm mb-2">Total Executions</div>
             <div className="text-3xl font-bold text-purple-400">
               {workflows.reduce((sum, w) => sum + (w._count?.executions || 0), 0)}
             </div>
@@ -244,19 +244,19 @@ export default function Dashboard() {
 
             <div className="space-y-4">
               {!session ? (
-                <div className="bg-slate-800 p-8 rounded-lg border border-slate-700 text-center">
-                  <p className="text-slate-400">Sign in to view your workflows</p>
+                <div className="bg-white/[0.03] p-8 rounded-2xl border border-white/10 text-center backdrop-blur-xl">
+                  <p className="text-slate-300">Sign in to view your workflows</p>
                 </div>
               ) : loading ? (
-                <div className="bg-slate-800 p-8 rounded-lg border border-slate-700 text-center">
+                <div className="bg-white/[0.03] p-8 rounded-2xl border border-white/10 text-center backdrop-blur-xl">
                   <div className="flex items-center justify-center gap-2">
                     <div className="w-4 h-4 border-2 border-blue-400 border-t-transparent rounded-full animate-spin"></div>
-                    <span className="text-slate-400">Loading workflows...</span>
+                    <span className="text-slate-300">Loading workflows...</span>
                   </div>
                 </div>
               ) : workflows.length === 0 ? (
-                <div className="bg-slate-800 p-8 rounded-lg border border-slate-700 text-center">
-                  <p className="text-slate-400 mb-4">No workflows yet</p>
+                <div className="bg-white/[0.03] p-8 rounded-2xl border border-white/10 text-center backdrop-blur-xl">
+                  <p className="text-slate-300 mb-4">No workflows yet</p>
                   <a
                     href="/builder"
                     className="inline-block px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors"
@@ -268,10 +268,10 @@ export default function Dashboard() {
                 workflows.map((workflow) => (
                   <div
                     key={workflow.id}
-                    className={`bg-slate-800 p-6 rounded-lg border transition-colors ${
+                    className={`bg-white/[0.03] p-6 rounded-2xl border transition-colors backdrop-blur-xl ${
                       workflow.status === 'ACTIVE' 
                         ? 'border-green-700 hover:border-green-600' 
-                        : 'border-slate-700 hover:border-slate-600'
+                        : 'border-white/10 hover:border-slate-600'
                     }`}
                   >
                     <div className="flex items-start justify-between mb-3">
@@ -288,10 +288,10 @@ export default function Dashboard() {
                           )}
                         </div>
                         {workflow.description && (
-                          <p className="text-sm text-slate-400">{workflow.description}</p>
+                          <p className="text-sm text-slate-300">{workflow.description}</p>
                         )}
                         {workflow.safeAddress && (
-                          <div className="flex items-center gap-2 text-xs text-slate-400 mt-2">
+                          <div className="flex items-center gap-2 text-xs text-slate-300 mt-2">
                             <span className="px-2 py-1 bg-purple-900/20 border border-purple-700 rounded text-purple-400">
                               Safe Multi-sig
                             </span>
@@ -302,7 +302,7 @@ export default function Dashboard() {
                       <span className={`px-3 py-1 rounded-full text-xs font-medium border ${
                         workflow.status === 'ACTIVE' ? 'text-green-400 bg-green-900/20 border-green-700' :
                         workflow.status === 'DRAFT' ? 'text-yellow-400 bg-yellow-900/20 border-yellow-700' :
-                        'text-slate-400 bg-slate-900/20 border-slate-700'
+                        'text-slate-300 bg-black/30/20 border-white/10'
                       }`}>
                         {workflow.status}
                       </span>
@@ -310,11 +310,11 @@ export default function Dashboard() {
 
                     <div className="grid grid-cols-2 gap-4 text-sm mb-4">
                       <div>
-                        <span className="text-slate-400">Executions:</span>
+                        <span className="text-slate-300">Executions:</span>
                         <span className="text-white ml-2 font-medium">{workflow._count?.executions || 0}</span>
                       </div>
                       <div>
-                        <span className="text-slate-400">Created:</span>
+                        <span className="text-slate-300">Created:</span>
                         <span className="text-white ml-2 font-medium">
                           {new Date(workflow.createdAt).toLocaleDateString()}
                         </span>
@@ -353,18 +353,18 @@ export default function Dashboard() {
           {/* Workflow Details */}
           <div>
             <h2 className="text-2xl font-semibold text-white mb-4">Recent Activity</h2>
-            <div className="bg-slate-800 p-6 rounded-lg border border-slate-700">
+            <div className="bg-white/[0.03] p-6 rounded-2xl border border-white/10 backdrop-blur-xl">
               {workflows.length === 0 ? (
                 <div className="text-center py-8">
-                  <p className="text-slate-400">No activity yet</p>
-                  <p className="text-slate-500 text-sm mt-2">Create a workflow to get started</p>
+                  <p className="text-slate-300">No activity yet</p>
+                  <p className="text-slate-400 text-sm mt-2">Create a workflow to get started</p>
                 </div>
               ) : (
                 <div className="space-y-3">
                   <div className="flex items-center gap-3 text-sm">
                     <span className="w-2 h-2 bg-blue-400 rounded-full"></span>
                     <span className="text-slate-300">Total workflows: {workflows.length}</span>
-                    <span className="text-slate-500 ml-auto">{currentTime.toLocaleTimeString()}</span>
+                    <span className="text-slate-400 ml-auto">{currentTime.toLocaleTimeString()}</span>
                   </div>
                   <div className="flex items-center gap-3 text-sm">
                     <span className="w-2 h-2 bg-green-400 rounded-full"></span>

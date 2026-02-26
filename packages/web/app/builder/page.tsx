@@ -8,6 +8,7 @@ import { useSession } from 'next-auth/react';
 
 type ConditionType = 'PRICE_THRESHOLD' | 'GAS_THRESHOLD' | 'TIME_BASED' | 'COMPOSITE_AND' | 'COMPOSITE_OR';
 type ActionType = 'CROSS_CHAIN_SWAP' | 'NOTIFICATION' | 'WEBHOOK' | 'MULTI_STEP';
+type PriorityType = 'REQUIRED' | 'PREFERRED';
 
 export default function WorkflowBuilder() {
   const router = useRouter();
@@ -91,6 +92,9 @@ export default function WorkflowBuilder() {
   const [gasNetwork, setGasNetwork] = useState('ethereum');
   const [gasComparison, setGasComparison] = useState<'above' | 'below'>('below');
   const [gasThreshold, setGasThreshold] = useState('20');
+  const [timeSchedule, setTimeSchedule] = useState<'hourly' | 'daily' | 'weekly' | 'monthly'>('daily');
+  const [includeSecondaryCondition, setIncludeSecondaryCondition] = useState(true);
+  const [secondaryConditionPriority, setSecondaryConditionPriority] = useState<PriorityType>('PREFERRED');
 
   // Swap action state
   const [depositCoin, setDepositCoin] = useState('eth');
@@ -115,26 +119,115 @@ export default function WorkflowBuilder() {
     const preview = generateWorkflowPreview();
     setWorkflowPreview(preview);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [workflowName, conditionType, actionType, token, threshold, depositCoin, settleCoin, amount]);
+  }, [workflowName, conditionType, actionType, token, comparison, threshold, gasNetwork, gasComparison, gasThreshold, timeSchedule, includeSecondaryCondition, secondaryConditionPriority, depositCoin, settleCoin, amount]);
+
+  const isCompositeCondition = conditionType === 'COMPOSITE_AND' || conditionType === 'COMPOSITE_OR';
+
+  const buildPriceCondition = () => ({
+    type: 'PRICE_THRESHOLD',
+    token,
+    comparison,
+    threshold: parseFloat(threshold),
+    currency: 'USD',
+  });
+
+  const buildGasCondition = () => ({
+    type: 'GAS_THRESHOLD',
+    network: gasNetwork,
+    comparison: gasComparison,
+    threshold: parseFloat(gasThreshold),
+  });
+
+  const buildConditionsPayload = () => {
+    if (isCompositeCondition) {
+      const childConditions: Array<Record<string, unknown>> = [
+        {
+          ...buildPriceCondition(),
+          priority: 'REQUIRED',
+          required: true,
+        },
+      ];
+
+      if (includeSecondaryCondition) {
+        childConditions.push({
+          ...buildGasCondition(),
+          priority: secondaryConditionPriority,
+          required: secondaryConditionPriority === 'REQUIRED',
+        });
+      }
+
+      return [
+        {
+          type: 'COMPOSITE',
+          operator: conditionType === 'COMPOSITE_AND' ? 'AND' : 'OR',
+          conditionType,
+          conditions: childConditions,
+        },
+      ];
+    }
+
+    if (conditionType === 'PRICE_THRESHOLD') {
+      return [buildPriceCondition()];
+    }
+
+    if (conditionType === 'GAS_THRESHOLD') {
+      return [buildGasCondition()];
+    }
+
+    return [{ type: 'TIME_BASED', schedule: timeSchedule }];
+  };
+
+  const getConditionSummary = () => {
+    if (conditionType === 'PRICE_THRESHOLD') {
+      return `${token} price is ${comparison} $${threshold}`;
+    }
+
+    if (conditionType === 'GAS_THRESHOLD') {
+      return `${gasNetwork} gas is ${gasComparison} ${gasThreshold} gwei`;
+    }
+
+    if (conditionType === 'TIME_BASED') {
+      return `Run on ${timeSchedule} schedule`;
+    }
+
+    const operatorLabel = conditionType === 'COMPOSITE_AND' ? 'AND' : 'OR';
+    const gasClause = includeSecondaryCondition
+      ? ` ${operatorLabel} ${gasNetwork} gas is ${gasComparison} ${gasThreshold} gwei (${secondaryConditionPriority === 'REQUIRED' ? 'must-have' : 'optional'})`
+      : '';
+
+    return `${token} price is ${comparison} $${threshold}${gasClause}`;
+  };
+
+
+  const parseWebhookBody = () => {
+    try {
+      return JSON.parse(webhookBody || '{}');
+    } catch {
+      throw new Error('Webhook body must be valid JSON');
+    }
+  };
+
+  const getActionSummary = () => {
+    if (actionType === 'CROSS_CHAIN_SWAP') {
+      return `Swap ${amount} ${depositCoin} (${depositNetwork}) → ${settleCoin} (${settleNetwork})`;
+    }
+
+    if (actionType === 'NOTIFICATION') {
+      return `Send notification: ${notificationTitle}`;
+    }
+
+    if (actionType === 'WEBHOOK') {
+      return `Call webhook (${webhookMethod}) ${webhookUrl || 'URL not set'}`;
+    }
+
+    return 'Execute multi-step flow (coming soon)';
+  };
 
   const generateWorkflowPreview = () => {
     const workflow = {
       name: workflowName || 'Untitled Workflow',
       description: `Auto-generated workflow`,
-      condition: {
-        type: conditionType,
-        ...(conditionType === 'PRICE_THRESHOLD' && {
-          token,
-          comparison,
-          threshold: parseFloat(threshold),
-          currency: 'USD',
-        }),
-        ...(conditionType === 'GAS_THRESHOLD' && {
-          network: gasNetwork,
-          comparison: gasComparison,
-          threshold: parseFloat(gasThreshold),
-        }),
-      },
+      condition: buildConditionsPayload()[0],
       actions: [
         {
           type: actionType,
@@ -154,7 +247,7 @@ export default function WorkflowBuilder() {
           ...(actionType === 'WEBHOOK' && {
             url: webhookUrl,
             method: webhookMethod,
-            body: JSON.parse(webhookBody || '{}'),
+            body: parseWebhookBody(),
           }),
         },
       ],
@@ -218,22 +311,7 @@ export default function WorkflowBuilder() {
       const workflowData = {
         name: workflowName,
         description: `Auto-generated workflow`,
-        conditions: [
-          {
-            type: conditionType,
-            ...(conditionType === 'PRICE_THRESHOLD' && {
-              token,
-              comparison,
-              threshold: parseFloat(threshold),
-              currency: 'USD',
-            }),
-            ...(conditionType === 'GAS_THRESHOLD' && {
-              network: gasNetwork,
-              comparison: gasComparison,
-              threshold: parseFloat(gasThreshold),
-            }),
-          },
-        ],
+        conditions: buildConditionsPayload(),
         actions: [
           {
             type: actionType,
@@ -253,7 +331,7 @@ export default function WorkflowBuilder() {
             ...(actionType === 'WEBHOOK' && {
               url: webhookUrl,
               method: webhookMethod,
-              body: JSON.parse(webhookBody || '{}'),
+              body: parseWebhookBody(),
             }),
           },
         ],
@@ -298,11 +376,22 @@ export default function WorkflowBuilder() {
       return;
     }
 
-    if (!settleAddress.trim()) {
+    if (actionType === 'CROSS_CHAIN_SWAP' && !settleAddress.trim()) {
       setDeployStatus('error');
       setStatusMessage('Please enter a settle address for the swap');
       setTimeout(() => setDeployStatus('idle'), 3000);
       return;
+    }
+
+    if (actionType === 'WEBHOOK') {
+      try {
+        parseWebhookBody();
+      } catch (error) {
+        setDeployStatus('error');
+        setStatusMessage((error as Error).message);
+        setTimeout(() => setDeployStatus('idle'), 3000);
+        return;
+      }
     }
 
     if (useSafe && !safeAddress.trim()) {
@@ -326,22 +415,7 @@ export default function WorkflowBuilder() {
       const workflowData = {
         name: workflowName,
         description: `Auto-generated workflow`,
-        conditions: [
-          {
-            type: conditionType,
-            ...(conditionType === 'PRICE_THRESHOLD' && {
-              token,
-              comparison,
-              threshold: parseFloat(threshold),
-              currency: 'USD',
-            }),
-            ...(conditionType === 'GAS_THRESHOLD' && {
-              network: gasNetwork,
-              comparison: gasComparison,
-              threshold: parseFloat(gasThreshold),
-            }),
-          },
-        ],
+        conditions: buildConditionsPayload(),
         actions: [
           {
             type: actionType,
@@ -352,6 +426,16 @@ export default function WorkflowBuilder() {
               settleNetwork,
               amount: parseFloat(amount),
               settleAddress,
+            }),
+            ...(actionType === 'NOTIFICATION' && {
+              title: notificationTitle,
+              message: notificationMessage,
+              email: notificationEmail,
+            }),
+            ...(actionType === 'WEBHOOK' && {
+              url: webhookUrl,
+              method: webhookMethod,
+              body: parseWebhookBody(),
             }),
           },
         ],
@@ -411,19 +495,19 @@ export default function WorkflowBuilder() {
   };
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+    <main className="min-h-screen bg-[#05080f]">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8 max-w-7xl">
         {/* Header */}
         <div className="mb-6 sm:mb-8">
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-2">Workflow Builder</h1>
-          <p className="text-sm sm:text-base text-slate-400">Create automated cross-chain workflows</p>
+          <p className="text-sm sm:text-base text-slate-300">Create automated cross-chain workflows</p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
           {/* Builder Form */}
           <div className="space-y-4 sm:space-y-6">
             {/* Basic Info */}
-            <div className="bg-slate-800 p-4 sm:p-6 rounded-lg border border-slate-700">
+            <div className="bg-white/[0.03] p-4 sm:p-6 rounded-2xl border border-white/10 backdrop-blur-xl">
               <h2 className="text-lg sm:text-xl font-semibold text-white mb-3 sm:mb-4">Basic Information</h2>
               
               <div className="space-y-4">
@@ -436,7 +520,7 @@ export default function WorkflowBuilder() {
                     value={workflowName}
                     onChange={(e) => setWorkflowName(e.target.value)}
                     placeholder="e.g., DeFi Sniper"
-                    className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                    className="w-full px-4 py-2 bg-black/30 border border-white/10 rounded-lg text-white focus:outline-none focus:border-blue-500"
                   />
                 </div>
 
@@ -446,7 +530,7 @@ export default function WorkflowBuilder() {
                       type="checkbox"
                       checked={useSafe}
                       onChange={(e) => setUseSafe(e.target.checked)}
-                      className="w-4 h-4 rounded border-slate-700 bg-slate-900"
+                      className="w-4 h-4 rounded border-white/10 bg-black/30"
                     />
                     <span>Execute through Safe (Multi-sig)</span>
                   </label>
@@ -462,7 +546,7 @@ export default function WorkflowBuilder() {
                       value={safeAddress}
                       onChange={(e) => setSafeAddress(e.target.value)}
                       placeholder="0x..."
-                      className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                      className="w-full px-4 py-2 bg-black/30 border border-white/10 rounded-lg text-white focus:outline-none focus:border-blue-500"
                     />
                   </div>
                 )}
@@ -470,7 +554,7 @@ export default function WorkflowBuilder() {
             </div>
 
             {/* Condition */}
-            <div className="bg-slate-800 p-4 sm:p-6 rounded-lg border border-slate-700">
+            <div className="bg-white/[0.03] p-4 sm:p-6 rounded-2xl border border-white/10 backdrop-blur-xl">
               <h2 className="text-lg sm:text-xl font-semibold text-white mb-3 sm:mb-4">Condition (When)</h2>
               
               <div className="space-y-4">
@@ -481,7 +565,7 @@ export default function WorkflowBuilder() {
                   <select
                     value={conditionType}
                     onChange={(e) => setConditionType(e.target.value as ConditionType)}
-                    className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                    className="w-full px-4 py-2 bg-black/30 border border-white/10 rounded-lg text-white focus:outline-none focus:border-blue-500"
                   >
                     <option value="PRICE_THRESHOLD">Price Threshold</option>
                     <option value="GAS_THRESHOLD">Gas Price Threshold</option>
@@ -501,7 +585,7 @@ export default function WorkflowBuilder() {
                         <select
                           value={gasNetwork}
                           onChange={(e) => setGasNetwork(e.target.value)}
-                          className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                          className="w-full px-4 py-2 bg-black/30 border border-white/10 rounded-lg text-white focus:outline-none focus:border-blue-500"
                         >
                           <option value="ethereum">Ethereum</option>
                           <option value="polygon">Polygon</option>
@@ -515,7 +599,7 @@ export default function WorkflowBuilder() {
                         <select
                           value={gasComparison}
                           onChange={(e) => setGasComparison(e.target.value as 'above' | 'below')}
-                          className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                          className="w-full px-4 py-2 bg-black/30 border border-white/10 rounded-lg text-white focus:outline-none focus:border-blue-500"
                         >
                           <option value="below">Below</option>
                           <option value="above">Above</option>
@@ -530,9 +614,9 @@ export default function WorkflowBuilder() {
                         type="number"
                         value={gasThreshold}
                         onChange={(e) => setGasThreshold(e.target.value)}
-                        className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                        className="w-full px-4 py-2 bg-black/30 border border-white/10 rounded-lg text-white focus:outline-none focus:border-blue-500"
                       />
-                      <p className="text-xs text-slate-500 mt-1">
+                      <p className="text-xs text-slate-400 mt-1">
                         Typical: Ethereum 20-50 gwei, Polygon 30-100 gwei, Arbitrum 0.1-1 gwei
                       </p>
                     </div>
@@ -546,7 +630,9 @@ export default function WorkflowBuilder() {
                         Schedule
                       </label>
                       <select
-                        className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                        value={timeSchedule}
+                        onChange={(e) => setTimeSchedule(e.target.value as 'hourly' | 'daily' | 'weekly' | 'monthly')}
+                        className="w-full px-4 py-2 bg-black/30 border border-white/10 rounded-lg text-white focus:outline-none focus:border-blue-500"
                       >
                         <option value="hourly">Every Hour</option>
                         <option value="daily">Every Day</option>
@@ -562,20 +648,147 @@ export default function WorkflowBuilder() {
                   </>
                 )}
 
+
+
+                {isCompositeCondition && (
+                  <>
+                    <div className="p-4 bg-purple-900/20 border border-purple-700 rounded-lg">
+                      <p className="text-purple-300 text-sm">
+                        💡 Combine a primary price trigger with an optional gas preference. Set gas as required or optional based on execution priority.
+                      </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-slate-300 mb-2">
+                          Primary Token
+                        </label>
+                        <select
+                          value={token}
+                          onChange={(e) => setToken(e.target.value)}
+                          className="w-full px-4 py-2 bg-black/30 border border-white/10 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                        >
+                          <option value="BTC">BTC - Bitcoin</option>
+                          <option value="ETH">ETH - Ethereum</option>
+                          <option value="BNB">BNB - Binance Coin</option>
+                          <option value="SOL">SOL - Solana</option>
+                          <option value="XRP">XRP - Ripple</option>
+                          <option value="ADA">ADA - Cardano</option>
+                          <option value="AVAX">AVAX - Avalanche</option>
+                          <option value="DOT">DOT - Polkadot</option>
+                          <option value="MATIC">MATIC - Polygon</option>
+                          <option value="LINK">LINK - Chainlink</option>
+                          <option value="UNI">UNI - Uniswap</option>
+                          <option value="ATOM">ATOM - Cosmos</option>
+                          <option value="USDT">USDT - Tether</option>
+                          <option value="USDC">USDC - USD Coin</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-slate-300 mb-2">
+                          Primary Comparison
+                        </label>
+                        <select
+                          value={comparison}
+                          onChange={(e) => setComparison(e.target.value as 'above' | 'below')}
+                          className="w-full px-4 py-2 bg-black/30 border border-white/10 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                        >
+                          <option value="below">Below</option>
+                          <option value="above">Above</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-slate-300 mb-2">
+                        Primary Threshold (USD)
+                      </label>
+                      <input
+                        type="number"
+                        value={threshold}
+                        onChange={(e) => setThreshold(e.target.value)}
+                        className="w-full px-4 py-2 bg-black/30 border border-white/10 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                      />
+                    </div>
+
+                    <label className="flex items-center gap-3 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={includeSecondaryCondition}
+                        onChange={(e) => setIncludeSecondaryCondition(e.target.checked)}
+                        className="w-4 h-4 text-blue-600 bg-black/30 border-white/10 rounded focus:ring-blue-500"
+                      />
+                      <span className="text-slate-300 text-sm">Add gas condition as secondary rule</span>
+                    </label>
+
+                    {includeSecondaryCondition && (
+                      <div className="space-y-4 p-4 bg-black/30 border border-white/10 rounded-lg">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-medium text-slate-300 mb-2">Gas Network</label>
+                            <select
+                              value={gasNetwork}
+                              onChange={(e) => setGasNetwork(e.target.value)}
+                              className="w-full px-4 py-2 bg-black/30 border border-white/10 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                            >
+                              <option value="ethereum">Ethereum</option>
+                              <option value="polygon">Polygon</option>
+                              <option value="arbitrum">Arbitrum</option>
+                            </select>
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-slate-300 mb-2">Gas Comparison</label>
+                            <select
+                              value={gasComparison}
+                              onChange={(e) => setGasComparison(e.target.value as 'above' | 'below')}
+                              className="w-full px-4 py-2 bg-black/30 border border-white/10 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                            >
+                              <option value="below">Below</option>
+                              <option value="above">Above</option>
+                            </select>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-medium text-slate-300 mb-2">Gas Threshold (gwei)</label>
+                            <input
+                              type="number"
+                              value={gasThreshold}
+                              onChange={(e) => setGasThreshold(e.target.value)}
+                              className="w-full px-4 py-2 bg-black/30 border border-white/10 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-slate-300 mb-2">Secondary Priority</label>
+                            <select
+                              value={secondaryConditionPriority}
+                              onChange={(e) => setSecondaryConditionPriority(e.target.value as PriorityType)}
+                              className="w-full px-4 py-2 bg-black/30 border border-white/10 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                            >
+                              <option value="PREFERRED">Preferred (nice-to-have)</option>
+                              <option value="REQUIRED">Required (must-have)</option>
+                            </select>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </>
+                )}
                 {conditionType === 'PRICE_THRESHOLD' && (
                   <>
                     {/* Live Price Display */}
                     {!pricesLoading && prices[token] && (
-                      <div className="p-4 bg-slate-900/50 border border-slate-700 rounded-lg">
+                      <div className="p-4 bg-black/30 border border-white/10 rounded-lg">
                         <div className="flex items-center justify-between">
                           <div>
-                            <p className="text-slate-400 text-sm">Current {token} Price</p>
+                            <p className="text-slate-300 text-sm">Current {token} Price</p>
                             <p className="text-white text-2xl font-bold mt-1">
                               {formatPrice(prices[token].price)}
                             </p>
                           </div>
                           <div className="text-right">
-                            <p className="text-slate-400 text-sm">24h Change</p>
+                            <p className="text-slate-300 text-sm">24h Change</p>
                             <p className={`text-lg font-semibold mt-1 ${
                               prices[token].change24h >= 0 ? 'text-green-400' : 'text-red-400'
                             }`}>
@@ -583,7 +796,7 @@ export default function WorkflowBuilder() {
                             </p>
                           </div>
                         </div>
-                        <p className="text-xs text-slate-500 mt-2">
+                        <p className="text-xs text-slate-400 mt-2">
                           Live data • Updates every 60s
                         </p>
                       </div>
@@ -597,7 +810,7 @@ export default function WorkflowBuilder() {
                         <select
                           value={token}
                           onChange={(e) => setToken(e.target.value)}
-                          className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                          className="w-full px-4 py-2 bg-black/30 border border-white/10 rounded-lg text-white focus:outline-none focus:border-blue-500"
                         >
                           <option value="BTC">BTC - Bitcoin</option>
                           <option value="ETH">ETH - Ethereum</option>
@@ -622,7 +835,7 @@ export default function WorkflowBuilder() {
                         <select
                           value={comparison}
                           onChange={(e) => setComparison(e.target.value as 'above' | 'below')}
-                          className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                          className="w-full px-4 py-2 bg-black/30 border border-white/10 rounded-lg text-white focus:outline-none focus:border-blue-500"
                         >
                           <option value="below">Below</option>
                           <option value="above">Above</option>
@@ -637,10 +850,10 @@ export default function WorkflowBuilder() {
                         type="number"
                         value={threshold}
                         onChange={(e) => setThreshold(e.target.value)}
-                        className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                        className="w-full px-4 py-2 bg-black/30 border border-white/10 rounded-lg text-white focus:outline-none focus:border-blue-500"
                       />
                       {prices[token] && (
-                        <p className="text-xs text-slate-400 mt-2">
+                        <p className="text-xs text-slate-300 mt-2">
                           Current price: {formatPrice(prices[token].price)} • 
                           Trigger when {comparison} ${threshold}
                         </p>
@@ -652,7 +865,7 @@ export default function WorkflowBuilder() {
             </div>
 
             {/* Action */}
-            <div className="bg-slate-800 p-4 sm:p-6 rounded-lg border border-slate-700">
+            <div className="bg-white/[0.03] p-4 sm:p-6 rounded-2xl border border-white/10 backdrop-blur-xl">
               <h2 className="text-lg sm:text-xl font-semibold text-white mb-3 sm:mb-4">Action (Then)</h2>
               
               <div className="space-y-4">
@@ -663,7 +876,7 @@ export default function WorkflowBuilder() {
                   <select
                     value={actionType}
                     onChange={(e) => setActionType(e.target.value as ActionType)}
-                    className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                    className="w-full px-4 py-2 bg-black/30 border border-white/10 rounded-lg text-white focus:outline-none focus:border-blue-500"
                   >
                     <option value="CROSS_CHAIN_SWAP">Cross-Chain Swap</option>
                     <option value="NOTIFICATION">Send Notification</option>
@@ -682,7 +895,7 @@ export default function WorkflowBuilder() {
                         <select
                           value={depositCoin}
                           onChange={(e) => setDepositCoin(e.target.value)}
-                          className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                          className="w-full px-4 py-2 bg-black/30 border border-white/10 rounded-lg text-white focus:outline-none focus:border-blue-500"
                         >
                           <option value="eth">ETH - Ethereum</option>
                           <option value="btc">BTC - Bitcoin</option>
@@ -704,7 +917,7 @@ export default function WorkflowBuilder() {
                         <select
                           value={depositNetwork}
                           onChange={(e) => setDepositNetwork(e.target.value)}
-                          className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                          className="w-full px-4 py-2 bg-black/30 border border-white/10 rounded-lg text-white focus:outline-none focus:border-blue-500"
                         >
                           <option value="ethereum">Ethereum Mainnet</option>
                           <option value="arbitrum">Arbitrum</option>
@@ -729,7 +942,7 @@ export default function WorkflowBuilder() {
                         <select
                           value={settleCoin}
                           onChange={(e) => setSettleCoin(e.target.value)}
-                          className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                          className="w-full px-4 py-2 bg-black/30 border border-white/10 rounded-lg text-white focus:outline-none focus:border-blue-500"
                         >
                           <option value="eth">ETH - Ethereum</option>
                           <option value="btc">BTC - Bitcoin</option>
@@ -751,7 +964,7 @@ export default function WorkflowBuilder() {
                         <select
                           value={settleNetwork}
                           onChange={(e) => setSettleNetwork(e.target.value)}
-                          className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                          className="w-full px-4 py-2 bg-black/30 border border-white/10 rounded-lg text-white focus:outline-none focus:border-blue-500"
                         >
                           <option value="ethereum">Ethereum Mainnet</option>
                           <option value="arbitrum">Arbitrum</option>
@@ -776,7 +989,7 @@ export default function WorkflowBuilder() {
                         type="text"
                         value={amount}
                         onChange={(e) => setAmount(e.target.value)}
-                        className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                        className="w-full px-4 py-2 bg-black/30 border border-white/10 rounded-lg text-white focus:outline-none focus:border-blue-500"
                       />
                     </div>
                     <div>
@@ -788,7 +1001,7 @@ export default function WorkflowBuilder() {
                         value={settleAddress}
                         onChange={(e) => setSettleAddress(e.target.value)}
                         placeholder="Destination address"
-                        className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                        className="w-full px-4 py-2 bg-black/30 border border-white/10 rounded-lg text-white focus:outline-none focus:border-blue-500"
                       />
                     </div>
                   </>
@@ -805,7 +1018,7 @@ export default function WorkflowBuilder() {
                         value={notificationTitle}
                         onChange={(e) => setNotificationTitle(e.target.value)}
                         placeholder="e.g., Workflow Executed"
-                        className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                        className="w-full px-4 py-2 bg-black/30 border border-white/10 rounded-lg text-white focus:outline-none focus:border-blue-500"
                       />
                     </div>
                     <div>
@@ -817,7 +1030,7 @@ export default function WorkflowBuilder() {
                         onChange={(e) => setNotificationMessage(e.target.value)}
                         placeholder="Notification message..."
                         rows={4}
-                        className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                        className="w-full px-4 py-2 bg-black/30 border border-white/10 rounded-lg text-white focus:outline-none focus:border-blue-500"
                       />
                     </div>
                     <div>
@@ -829,9 +1042,9 @@ export default function WorkflowBuilder() {
                         value={notificationEmail}
                         onChange={(e) => setNotificationEmail(e.target.value)}
                         placeholder="your@email.com"
-                        className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                        className="w-full px-4 py-2 bg-black/30 border border-white/10 rounded-lg text-white focus:outline-none focus:border-blue-500"
                       />
-                      <p className="text-xs text-slate-500 mt-1">
+                      <p className="text-xs text-slate-400 mt-1">
                         Receive email alerts when workflow conditions are met
                       </p>
                     </div>
@@ -854,7 +1067,7 @@ export default function WorkflowBuilder() {
                         value={webhookUrl}
                         onChange={(e) => setWebhookUrl(e.target.value)}
                         placeholder="https://your-api.com/webhook"
-                        className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                        className="w-full px-4 py-2 bg-black/30 border border-white/10 rounded-lg text-white focus:outline-none focus:border-blue-500"
                       />
                     </div>
                     <div>
@@ -864,7 +1077,7 @@ export default function WorkflowBuilder() {
                       <select
                         value={webhookMethod}
                         onChange={(e) => setWebhookMethod(e.target.value as 'POST' | 'GET')}
-                        className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                        className="w-full px-4 py-2 bg-black/30 border border-white/10 rounded-lg text-white focus:outline-none focus:border-blue-500"
                       >
                         <option value="POST">POST</option>
                         <option value="GET">GET</option>
@@ -879,7 +1092,7 @@ export default function WorkflowBuilder() {
                         onChange={(e) => setWebhookBody(e.target.value)}
                         placeholder='{"key": "value"}'
                         rows={4}
-                        className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-blue-500 font-mono text-sm"
+                        className="w-full px-4 py-2 bg-black/30 border border-white/10 rounded-lg text-white focus:outline-none focus:border-blue-500 font-mono text-sm"
                       />
                     </div>
                     <div className="p-4 bg-blue-900/20 border border-blue-700 rounded-lg">
@@ -895,7 +1108,7 @@ export default function WorkflowBuilder() {
                     <p className="text-yellow-300 text-sm mb-2">
                       🚧 Multi-step workflows are coming soon!
                     </p>
-                    <p className="text-slate-400 text-sm">
+                    <p className="text-slate-300 text-sm">
                       This feature will allow you to chain multiple actions together (e.g., swap → notify → webhook).
                       For now, please use single-action workflows.
                     </p>
@@ -907,24 +1120,23 @@ export default function WorkflowBuilder() {
 
           {/* Preview */}
           <div className="lg:sticky lg:top-8 h-fit">
-            <div className="bg-slate-800 p-4 sm:p-6 rounded-lg border border-slate-700">
+            <div className="bg-white/[0.03] p-4 sm:p-6 rounded-2xl border border-white/10 backdrop-blur-xl">
               <h2 className="text-lg sm:text-xl font-semibold text-white mb-3 sm:mb-4">Workflow Preview</h2>
               
               <div className="mb-4 p-4 bg-blue-900/20 border border-blue-700 rounded-lg">
                 <p className="text-blue-300 text-sm">
                   <strong>When:</strong>{' '}
-                  {conditionType === 'PRICE_THRESHOLD' && `${token} price is ${comparison} $${threshold}`}
-                  {conditionType === 'GAS_THRESHOLD' && `${gasNetwork} gas is ${gasComparison} ${gasThreshold} gwei`}
+                  {getConditionSummary()}
                   {useSafe && ' (via Safe multi-sig)'}
                 </p>
                 <p className="text-blue-300 text-sm mt-2">
-                  <strong>Then:</strong> Swap {amount} {depositCoin} ({depositNetwork}) → {settleCoin} ({settleNetwork})
+                  <strong>Then:</strong> {getActionSummary()}
                 </p>
               </div>
 
               <div className="mb-4">
-                <h3 className="text-sm font-medium text-slate-400 mb-2">Workflow Preview</h3>
-                <pre className="bg-slate-900 p-4 rounded-lg text-xs text-slate-300 overflow-x-auto max-h-96">
+                <h3 className="text-sm font-medium text-slate-300 mb-2">Workflow Preview</h3>
+                <pre className="bg-black/30 p-4 rounded-lg text-xs text-slate-300 overflow-x-auto max-h-96">
                   {workflowPreview}
                 </pre>
               </div>
@@ -942,7 +1154,7 @@ export default function WorkflowBuilder() {
                   >
                     {isSavingGuest ? 'Saving...' : '💾 Save Test Workflow (No Sign-In Required)'}
                   </button>
-                  <p className="text-xs text-slate-400 mt-2">
+                  <p className="text-xs text-slate-300 mt-2">
                     Your workflow will be saved anonymously for testing feedback.
                   </p>
                 </div>
@@ -982,12 +1194,12 @@ export default function WorkflowBuilder() {
             </div>
 
             {/* Features */}
-            <div className="mt-4 sm:mt-6 bg-slate-800 p-4 sm:p-6 rounded-lg border border-slate-700">
+            <div className="mt-4 sm:mt-6 bg-white/[0.03] p-4 sm:p-6 rounded-2xl border border-white/10 backdrop-blur-xl">
               <h3 className="text-base sm:text-lg font-semibold text-white mb-3">Available Features</h3>
-              <ul className="space-y-2 text-sm text-slate-400">
+              <ul className="space-y-2 text-sm text-slate-300">
                 <li>✅ Smart Account (Safe) integration</li>
                 <li>✅ Multi-condition workflows (AND/OR)</li>
-                <li>✅ Multi-step actions</li>
+                <li>🚧 Multi-step actions (coming soon)</li>
                 <li>✅ Price-based triggers</li>
                 <li>✅ Gas price optimization</li>
                 <li>✅ Time-based scheduling</li>

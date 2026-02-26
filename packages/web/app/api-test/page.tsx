@@ -47,18 +47,18 @@ export default function APITestPage() {
   };
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+    <main className="min-h-screen bg-[#05080f]">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-white mb-2">API Integration Test</h1>
-          <p className="text-slate-400">Live data from CoinGecko and SideShift APIs</p>
+          <p className="text-slate-300">Live data from CoinGecko and SideShift APIs</p>
         </div>
 
         <div className="grid lg:grid-cols-2 gap-8">
           {/* Price Oracle Section */}
           <div className="space-y-6">
-            <div className="bg-slate-800 p-6 rounded-lg border border-slate-700">
+            <div className="bg-white/[0.03] p-6 rounded-2xl border border-white/10 backdrop-blur-xl">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-2xl font-semibold text-white">Live Crypto Prices</h2>
                 <span className="px-3 py-1 bg-green-900/20 text-green-400 rounded-full text-xs font-medium border border-green-700">
@@ -69,7 +69,7 @@ export default function APITestPage() {
               {pricesLoading ? (
                 <div className="text-center py-8">
                   <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
-                  <p className="text-slate-400 mt-4">Fetching prices...</p>
+                  <p className="text-slate-300 mt-4">Fetching prices...</p>
                 </div>
               ) : Object.keys(prices).length === 0 ? (
                 <div className="p-4 bg-red-900/20 border border-red-700 rounded-lg">
@@ -89,7 +89,7 @@ export default function APITestPage() {
                     return (
                       <div
                         key={symbol}
-                        className="bg-slate-900/50 p-4 rounded-lg border border-slate-700 hover:border-slate-600 transition-colors"
+                        className="bg-black/30 p-4 rounded-lg border border-white/10 hover:border-slate-600 transition-colors"
                       >
                         <div className="flex flex-col">
                           <div className="flex items-center justify-between mb-2">
@@ -101,7 +101,7 @@ export default function APITestPage() {
                           <p className="text-white font-bold text-xl mb-1">
                             {formatPrice(data.price)}
                           </p>
-                          <p className="text-slate-400 text-xs">
+                          <p className="text-slate-300 text-xs">
                             Updated {new Date(data.lastUpdated).toLocaleTimeString()}
                           </p>
                         </div>
@@ -122,7 +122,7 @@ export default function APITestPage() {
           {/* SideShift Section */}
           <div className="space-y-6">
             {/* Get Quote */}
-            <div className="bg-slate-800 p-6 rounded-lg border border-slate-700">
+            <div className="bg-white/[0.03] p-6 rounded-2xl border border-white/10 backdrop-blur-xl">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-2xl font-semibold text-white">SideShift Quote</h2>
                 <span className="px-3 py-1 bg-purple-900/20 text-purple-400 rounded-full text-xs font-medium border border-purple-700">
@@ -132,39 +132,39 @@ export default function APITestPage() {
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-slate-400 text-sm mb-2">Deposit Coin</label>
+                  <label className="block text-slate-300 text-sm mb-2">Deposit Coin</label>
                   <input
                     type="text"
                     value={quoteParams.depositCoin}
                     onChange={(e) => setQuoteParams({ ...quoteParams, depositCoin: e.target.value })}
-                    className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                    className="w-full px-4 py-2 bg-black/30 border border-white/10 rounded-lg text-white focus:outline-none focus:border-blue-500"
                     placeholder="eth"
                   />
-                  <p className="text-xs text-slate-500 mt-1">Examples: eth, btc, usdt, sol</p>
+                  <p className="text-xs text-slate-400 mt-1">Examples: eth, btc, usdt, sol</p>
                 </div>
 
                 <div>
-                  <label className="block text-slate-400 text-sm mb-2">Settle Coin</label>
+                  <label className="block text-slate-300 text-sm mb-2">Settle Coin</label>
                   <input
                     type="text"
                     value={quoteParams.settleCoin}
                     onChange={(e) => setQuoteParams({ ...quoteParams, settleCoin: e.target.value })}
-                    className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                    className="w-full px-4 py-2 bg-black/30 border border-white/10 rounded-lg text-white focus:outline-none focus:border-blue-500"
                     placeholder="btc"
                   />
-                  <p className="text-xs text-slate-500 mt-1">Examples: btc, eth, usdc, matic</p>
+                  <p className="text-xs text-slate-400 mt-1">Examples: btc, eth, usdc, matic</p>
                 </div>
 
                 <div>
-                  <label className="block text-slate-400 text-sm mb-2">Amount</label>
+                  <label className="block text-slate-300 text-sm mb-2">Amount</label>
                   <input
                     type="text"
                     value={quoteParams.depositAmount}
                     onChange={(e) => setQuoteParams({ ...quoteParams, depositAmount: e.target.value })}
-                    className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                    className="w-full px-4 py-2 bg-black/30 border border-white/10 rounded-lg text-white focus:outline-none focus:border-blue-500"
                     placeholder="1"
                   />
-                  <p className="text-xs text-slate-500 mt-1">Amount to swap (e.g., 1, 0.5, 100)</p>
+                  <p className="text-xs text-slate-400 mt-1">Amount to swap (e.g., 1, 0.5, 100)</p>
                 </div>
 
                 <button
@@ -188,27 +188,27 @@ export default function APITestPage() {
                 )}
 
                 {quote && (
-                  <div className="p-4 bg-slate-900/50 border border-slate-700 rounded-lg space-y-3">
+                  <div className="p-4 bg-black/30 border border-white/10 rounded-lg space-y-3">
                     <h3 className="text-white font-semibold">Quote Result:</h3>
                     <div className="space-y-2 text-sm">
                       <div className="flex justify-between">
-                        <span className="text-slate-400">Quote ID:</span>
+                        <span className="text-slate-300">Quote ID:</span>
                         <span className="text-white font-mono">{quote.id.slice(0, 16)}...</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-slate-400">Deposit:</span>
+                        <span className="text-slate-300">Deposit:</span>
                         <span className="text-white">{quote.depositAmount} {quote.depositCoin.toUpperCase()}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-slate-400">Receive:</span>
+                        <span className="text-slate-300">Receive:</span>
                         <span className="text-green-400 font-semibold">{quote.settleAmount} {quote.settleCoin.toUpperCase()}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-slate-400">Rate:</span>
+                        <span className="text-slate-300">Rate:</span>
                         <span className="text-white">{quote.rate}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-slate-400">Expires:</span>
+                        <span className="text-slate-300">Expires:</span>
                         <span className="text-yellow-400">{new Date(quote.expiresAt).toLocaleTimeString()}</span>
                       </div>
                     </div>
@@ -218,17 +218,17 @@ export default function APITestPage() {
             </div>
 
             {/* Check Order Status */}
-            <div className="bg-slate-800 p-6 rounded-lg border border-slate-700">
+            <div className="bg-white/[0.03] p-6 rounded-2xl border border-white/10 backdrop-blur-xl">
               <h3 className="text-xl font-semibold text-white mb-4">Check Order Status</h3>
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-slate-400 text-sm mb-2">Order ID</label>
+                  <label className="block text-slate-300 text-sm mb-2">Order ID</label>
                   <input
                     type="text"
                     value={orderId}
                     onChange={(e) => setOrderId(e.target.value)}
-                    className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                    className="w-full px-4 py-2 bg-black/30 border border-white/10 rounded-lg text-white focus:outline-none focus:border-blue-500"
                     placeholder="Enter SideShift order ID"
                   />
                 </div>
@@ -242,11 +242,11 @@ export default function APITestPage() {
                 </button>
 
                 {orderStatus && (
-                  <div className="p-4 bg-slate-900/50 border border-slate-700 rounded-lg space-y-3">
+                  <div className="p-4 bg-black/30 border border-white/10 rounded-lg space-y-3">
                     <h4 className="text-white font-semibold">Order Status:</h4>
                     <div className="space-y-2 text-sm">
                       <div className="flex justify-between items-center">
-                        <span className="text-slate-400">Status:</span>
+                        <span className="text-slate-300">Status:</span>
                         <span className={`px-3 py-1 rounded-full text-xs font-medium border ${
                           orderStatus.status === 'settled' ? 'bg-green-900/20 text-green-400 border-green-700' :
                           orderStatus.status === 'waiting' ? 'bg-yellow-900/20 text-yellow-400 border-yellow-700' :
@@ -256,18 +256,18 @@ export default function APITestPage() {
                         </span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-slate-400">Deposit Address:</span>
+                        <span className="text-slate-300">Deposit Address:</span>
                         <span className="text-white font-mono text-xs">{orderStatus.depositAddress?.slice(0, 20)}...</span>
                       </div>
                       {orderStatus.depositHash && (
                         <div className="flex justify-between">
-                          <span className="text-slate-400">Deposit TX:</span>
+                          <span className="text-slate-300">Deposit TX:</span>
                           <span className="text-blue-400 font-mono text-xs">{orderStatus.depositHash.slice(0, 20)}...</span>
                         </div>
                       )}
                       {orderStatus.settleHash && (
                         <div className="flex justify-between">
-                          <span className="text-slate-400">Settle TX:</span>
+                          <span className="text-slate-300">Settle TX:</span>
                           <span className="text-green-400 font-mono text-xs">{orderStatus.settleHash.slice(0, 20)}...</span>
                         </div>
                       )}
@@ -280,7 +280,7 @@ export default function APITestPage() {
         </div>
 
         {/* Integration Status */}
-        <div className="mt-8 bg-slate-800 p-6 rounded-lg border border-slate-700">
+        <div className="mt-8 bg-white/[0.03] p-6 rounded-2xl border border-white/10 backdrop-blur-xl">
           <h2 className="text-2xl font-semibold text-white mb-4">Integration Status</h2>
           <div className="grid md:grid-cols-3 gap-4">
             <div className="p-4 bg-green-900/20 border border-green-700 rounded-lg">
@@ -288,7 +288,7 @@ export default function APITestPage() {
                 <span className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></span>
                 <div>
                   <p className="text-green-400 font-semibold">CoinGecko API</p>
-                  <p className="text-slate-400 text-sm">Real-time prices</p>
+                  <p className="text-slate-300 text-sm">Real-time prices</p>
                 </div>
               </div>
             </div>
@@ -297,7 +297,7 @@ export default function APITestPage() {
                 <span className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></span>
                 <div>
                   <p className="text-green-400 font-semibold">SideShift API</p>
-                  <p className="text-slate-400 text-sm">Cross-chain swaps</p>
+                  <p className="text-slate-300 text-sm">Cross-chain swaps</p>
                 </div>
               </div>
             </div>
@@ -306,7 +306,7 @@ export default function APITestPage() {
                 <span className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></span>
                 <div>
                   <p className="text-green-400 font-semibold">Safe SDK</p>
-                  <p className="text-slate-400 text-sm">Multi-sig support</p>
+                  <p className="text-slate-300 text-sm">Multi-sig support</p>
                 </div>
               </div>
             </div>

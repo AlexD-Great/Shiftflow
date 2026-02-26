@@ -1,189 +1,157 @@
+const trustSignals = [
+  { label: 'Supported Networks', value: '12+' },
+  { label: 'Integrated Assets', value: '50+' },
+  { label: 'Templates Ready', value: '8' },
+  { label: 'Monitoring Cadence', value: '60s' },
+];
+
+const coreCapabilities = [
+  {
+    title: 'Signal-Driven Automation',
+    copy: 'Trigger cross-chain actions from price, gas, and schedule signals without babysitting charts.',
+  },
+  {
+    title: 'Execution Controls',
+    copy: 'Set required vs preferred conditions so urgent workflows execute while non-critical checks stay optional.',
+  },
+  {
+    title: 'Treasury-Ready Safety',
+    copy: 'Route actions through wallet approvals and Safe-compatible flows when governance needs tighter controls.',
+  },
+];
+
+const workflowExamples = [
+  {
+    title: 'Smart Accumulation',
+    description: 'Accumulate BTC when ETH weakens below your level while keeping gas overhead constrained.',
+    snippet: `WHEN ETH < $3,000\nPREFER gas < 20 gwei\nTHEN swap ETH/Arbitrum → BTC/Bitcoin`,
+  },
+  {
+    title: 'Recurring Treasury Ops',
+    description: 'Run weekly treasury actions with notifications to keep teams aligned on execution windows.',
+    snippet: `WHEN schedule = weekly\nTHEN notify ops + execute configured action`,
+  },
+];
+
 export default function Home() {
   return (
-    <main className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-16 max-w-7xl">
-        {/* Beta Banner */}
-        <div className="mb-6 sm:mb-8 flex justify-center">
-          <div className="inline-flex items-center gap-2 px-3 sm:px-4 py-2 bg-gradient-to-r from-yellow-600/20 to-orange-600/20 border border-yellow-500/30 rounded-full">
-            <span className="text-yellow-400 text-xs sm:text-sm font-medium">🚧 BETA</span>
-            <span className="text-slate-300 text-xs sm:text-sm">Currently in testing phase - Join our beta program!</span>
-          </div>
-        </div>
+    <main className="relative min-h-screen overflow-hidden bg-[#05080f] text-white">
+      <div className="pointer-events-none absolute inset-0">
+        <div className="absolute -top-40 left-1/2 h-[420px] w-[420px] -translate-x-1/2 rounded-full bg-cyan-500/15 blur-[120px]" />
+        <div className="absolute top-44 -left-24 h-[320px] w-[320px] rounded-full bg-blue-600/15 blur-[120px]" />
+        <div className="absolute bottom-0 right-0 h-[340px] w-[340px] rounded-full bg-purple-600/15 blur-[140px]" />
+      </div>
 
-        {/* Header */}
-        <header className="text-center mb-12 sm:mb-20">
-          <div className="mb-6">
-            <div className="inline-block p-4 bg-blue-600/10 rounded-2xl mb-4">
-              <div className="text-6xl">⚡</div>
+      <div className="relative mx-auto flex w-full max-w-7xl flex-col gap-10 px-4 pb-14 pt-8 sm:px-6 lg:px-8 lg:pt-12">
+        <nav className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/[0.02] px-4 py-3 backdrop-blur-xl sm:px-6">
+          <div className="flex items-center gap-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-cyan-400/20 ring-1 ring-cyan-300/20">⚡</div>
+            <div>
+              <p className="text-sm font-semibold tracking-wide text-white">ShiftFlow</p>
+              <p className="text-xs text-slate-400">Cross-chain automation platform</p>
             </div>
           </div>
-          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-6 bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-600">
-            ShiftFlow
-          </h1>
-          <p className="text-lg sm:text-xl md:text-2xl text-slate-300 mb-4 font-light">
-            Automate Your Cross-Chain DeFi Strategy
-          </p>
-          <p className="text-base sm:text-lg text-slate-400 mb-8 sm:mb-12 max-w-2xl mx-auto px-4">
-            Set conditions, define actions, and let ShiftFlow execute your workflows automatically across multiple blockchains
-          </p>
-          <div className="flex gap-4 justify-center flex-wrap">
-            <a
-              href="/builder"
-              className="group px-8 py-4 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white rounded-xl font-semibold transition-all transform hover:scale-105 shadow-lg hover:shadow-xl"
-            >
-              <div className="flex items-center gap-2">
-                <span>Build Workflow</span>
-                <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                </svg>
-              </div>
-            </a>
-            <a
-              href="/demo/safe"
-              className="group px-8 py-4 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-xl font-semibold transition-all transform hover:scale-105 shadow-lg hover:shadow-xl"
-            >
-              <div className="flex items-center gap-2">
-                <span>🔐 Smart Account Demo</span>
-              </div>
-            </a>
-            <a
-              href="/templates"
-              className="group px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-xl font-semibold transition-all transform hover:scale-105 shadow-lg hover:shadow-xl"
-            >
-              <div className="flex items-center gap-2">
-                <span>📚 Browse Templates</span>
-              </div>
-            </a>
+          <div className="hidden items-center gap-6 text-sm text-slate-300 md:flex">
+            <a href="/templates" className="transition-colors hover:text-white">Templates</a>
+            <a href="/builder" className="transition-colors hover:text-white">Builder</a>
+            <a href="/admin/test-data" className="transition-colors hover:text-white">Dashboard</a>
           </div>
-        </header>
+          <a href="/builder" className="rounded-lg bg-white px-4 py-2 text-sm font-medium text-slate-900 transition hover:bg-slate-200">
+            Try Builder
+          </a>
+        </nav>
 
-        {/* What it does */}
-        <section className="max-w-3xl mx-auto mb-16">
-          <h2 className="text-3xl font-bold text-white mb-6">What This Does</h2>
-          <p className="text-slate-300 text-lg mb-4">
-            I built ShiftFlow because I was tired of manually monitoring prices and executing swaps across different chains. 
-            The idea is simple: define what you want to happen and when, then let the system handle it.
-          </p>
-          <p className="text-slate-300 text-lg">
-            It's built on top of SideShift's API, which handles the actual cross-chain swaps. ShiftFlow adds the automation layer.
-          </p>
-        </section>
-
-        {/* Examples */}
-        <section className="max-w-4xl mx-auto mb-12 sm:mb-16">
-          <h2 className="text-2xl sm:text-3xl font-bold text-white mb-6 sm:mb-8">Example Workflows</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-            <div className="bg-slate-800 p-4 sm:p-6 rounded-lg border border-slate-700">
-              <h3 className="text-lg sm:text-xl font-semibold text-white mb-3">Price-Based Triggers</h3>
-              <p className="text-sm sm:text-base text-slate-400 mb-4">
-                Automatically execute swaps when prices hit your targets
-              </p>
-              <pre className="bg-slate-900 p-3 sm:p-4 rounded text-xs sm:text-sm text-slate-300 overflow-x-auto">
-{`whenPriceIs('ETH', 'below', 3000)
-  .thenSwap({
-    from: 'eth/arbitrum',
-    to: 'btc/bitcoin'
-  })`}
-              </pre>
-            </div>
-
-            <div className="bg-slate-800 p-4 sm:p-6 rounded-lg border border-slate-700">
-              <h3 className="text-lg sm:text-xl font-semibold text-white mb-3">Treasury Management</h3>
-              <p className="text-sm sm:text-base text-slate-400 mb-4">
-                Rebalance holdings based on market conditions
-              </p>
-              <pre className="bg-slate-900 p-3 sm:p-4 rounded text-xs sm:text-sm text-slate-300 overflow-x-auto">
-{`whenPriceIs('BTC', 'above', 100000)
-  .thenSwap({
-    from: 'btc/bitcoin',
-    to: 'usdc/arbitrum'
-  })`}
-              </pre>
-            </div>
-          </div>
-        </section>
-
-        {/* Features */}
-        <section className="max-w-4xl mx-auto mb-12 sm:mb-16">
-          <h2 className="text-2xl sm:text-3xl font-bold text-white mb-6 sm:mb-8">How It Works</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
-            <div className="bg-slate-800 p-4 sm:p-6 rounded-lg border border-slate-700">
-              <h3 className="text-lg font-semibold text-white mb-3">Backend Engine</h3>
-              <ul className="text-slate-400 space-y-2">
-                <li>• Monitors conditions</li>
-                <li>• Executes workflows</li>
-                <li>• Handles SideShift API</li>
-              </ul>
-            </div>
-
-            <div className="bg-slate-800 p-6 rounded-lg border border-slate-700">
-              <h3 className="text-lg font-semibold text-white mb-3">TypeScript SDK</h3>
-              <ul className="text-slate-400 space-y-2">
-                <li>• Clean API</li>
-                <li>• Type-safe</li>
-                <li>• Easy integration</li>
-              </ul>
-            </div>
-
-            <div className="bg-slate-800 p-6 rounded-lg border border-slate-700">
-              <h3 className="text-lg font-semibold text-white mb-3">Non-Custodial</h3>
-              <ul className="text-slate-400 space-y-2">
-                <li>• Your keys</li>
-                <li>• Your control</li>
-                <li>• Your funds</li>
-              </ul>
-            </div>
-          </div>
-        </section>
-
-        {/* Tech Stack */}
-        <section className="max-w-3xl mx-auto mb-16">
-          <h2 className="text-3xl font-bold text-white mb-6">Technical Stack</h2>
-          <div className="flex flex-wrap gap-3">
-            {['TypeScript', 'Node.js', 'Next.js', 'SideShift API', 'CoinGecko', 'Tailwind CSS'].map((tech) => (
-              <span key={tech} className="px-4 py-2 bg-slate-800 text-slate-300 rounded-full border border-slate-700">
-                {tech}
+        <section className="grid grid-cols-1 gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:gap-10">
+          <div className="rounded-3xl border border-white/10 bg-white/[0.02] p-6 backdrop-blur-xl sm:p-8 lg:p-10">
+            <p className="mb-4 inline-flex rounded-full border border-cyan-400/25 bg-cyan-400/10 px-3 py-1 text-xs font-medium uppercase tracking-[0.16em] text-cyan-300">
+              Built for real DeFi operations
+            </p>
+            <h1 className="text-4xl font-semibold leading-tight text-white sm:text-5xl lg:text-6xl">
+              Automate your
+              <span className="block bg-gradient-to-r from-cyan-300 via-blue-300 to-purple-300 bg-clip-text text-transparent">
+                cross-chain workflows
               </span>
+            </h1>
+            <p className="mt-5 max-w-2xl text-base leading-relaxed text-slate-300 sm:text-lg">
+              ShiftFlow helps teams and power users design condition-based workflows that monitor markets, validate execution rules, and trigger the right actions at the right time.
+            </p>
+
+            <div className="mt-8 flex flex-wrap gap-3">
+              <a href="/builder" className="rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-cyan-900/40 transition hover:brightness-110">
+                Start Building
+              </a>
+              <a href="/templates" className="rounded-xl border border-white/20 px-6 py-3 text-sm font-semibold text-slate-100 transition hover:border-white/40 hover:bg-white/5">
+                Explore Templates
+              </a>
+            </div>
+
+            <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
+              {trustSignals.map((item) => (
+                <div key={item.label} className="rounded-xl border border-white/10 bg-black/20 px-4 py-3">
+                  <p className="text-lg font-semibold text-white">{item.value}</p>
+                  <p className="text-xs text-slate-400">{item.label}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="rounded-3xl border border-white/10 bg-gradient-to-br from-slate-900/90 to-slate-950/90 p-6 backdrop-blur-xl sm:p-8">
+            <p className="text-xs uppercase tracking-[0.16em] text-cyan-300">Execution Preview</p>
+            <div className="mt-5 space-y-4">
+              <div className="rounded-xl border border-cyan-400/20 bg-cyan-400/5 p-4">
+                <p className="text-sm font-medium text-cyan-200">Condition Set</p>
+                <p className="mt-2 text-sm text-slate-300">ETH below $3,000 + preferred gas threshold + Arbitrum route</p>
+              </div>
+              <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
+                <p className="text-sm font-medium text-white">Action Route</p>
+                <p className="mt-2 text-sm text-slate-300">Execute SideShift swap and send execution notification</p>
+              </div>
+              <div className="rounded-xl border border-emerald-400/20 bg-emerald-400/5 p-4">
+                <p className="text-sm font-medium text-emerald-200">Status</p>
+                <p className="mt-2 text-sm text-slate-300">Monitoring live market and network conditions every 60 seconds</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="rounded-3xl border border-white/10 bg-white/[0.02] p-6 backdrop-blur-xl sm:p-8">
+          <h2 className="text-2xl font-semibold text-white sm:text-3xl">Designed for teams that move capital cross-chain</h2>
+          <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-3">
+            {coreCapabilities.map((item) => (
+              <div key={item.title} className="rounded-2xl border border-white/10 bg-black/20 p-5">
+                <h3 className="text-base font-semibold text-white">{item.title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-slate-300">{item.copy}</p>
+              </div>
             ))}
           </div>
         </section>
 
-        {/* CTA */}
-        <section className="max-w-3xl mx-auto text-center">
-          <h2 className="text-3xl font-bold text-white mb-4">Ready to Get Started?</h2>
-          <p className="text-slate-300 mb-8">
-            Check out the documentation and start building automated workflows
+        <section className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          {workflowExamples.map((item) => (
+            <div key={item.title} className="rounded-2xl border border-white/10 bg-white/[0.02] p-6 backdrop-blur-xl">
+              <h3 className="text-lg font-semibold text-white">{item.title}</h3>
+              <p className="mt-2 text-sm text-slate-300">{item.description}</p>
+              <pre className="mt-4 overflow-x-auto rounded-xl border border-white/10 bg-black/25 p-4 text-xs text-cyan-100">
+{item.snippet}
+              </pre>
+            </div>
+          ))}
+        </section>
+
+        <section className="rounded-3xl border border-white/10 bg-gradient-to-r from-cyan-500/10 via-blue-500/10 to-purple-500/10 p-6 text-center sm:p-8">
+          <h2 className="text-2xl font-semibold text-white sm:text-3xl">Want early access before full public launch?</h2>
+          <p className="mx-auto mt-3 max-w-2xl text-sm text-slate-300 sm:text-base">
+            Use the builder, test templates, and share feedback. We are prioritizing real workflows used by real users before broader rollout.
           </p>
-          <div className="flex gap-4 justify-center">
-            <a
-              href="https://github.com/AlexD-Great/Shiftflow#readme"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
-            >
-              Documentation
+          <div className="mt-6 flex flex-wrap justify-center gap-3">
+            <a href="/builder" className="rounded-xl bg-white px-6 py-3 text-sm font-semibold text-slate-900 transition hover:bg-slate-200">
+              Try Builder
             </a>
-            <a
-              href="/builder"
-              className="px-6 py-3 bg-slate-700 hover:bg-slate-600 text-white rounded-lg font-medium transition-colors"
-            >
-              Try It Now
+            <a href="https://github.com/AlexD-Great/Shiftflow/discussions" target="_blank" rel="noopener noreferrer" className="rounded-xl border border-white/25 px-6 py-3 text-sm font-semibold text-white transition hover:bg-white/10">
+              Share Feedback
             </a>
           </div>
         </section>
-
-        {/* Footer */}
-        <footer className="mt-24 text-center text-slate-500">
-          <div className="mb-4">
-            <a 
-              href="/admin/test-data" 
-              className="text-slate-600 hover:text-slate-400 text-sm transition-colors"
-            >
-              📊 Admin Dashboard
-            </a>
-          </div>
-          <p>© 2025 ShiftFlow. All rights reserved.</p>
-        </footer>
       </div>
     </main>
   );

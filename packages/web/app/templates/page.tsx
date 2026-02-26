@@ -197,7 +197,7 @@ export default function TemplatesPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white p-8">
+    <div className="min-h-screen bg-[#05080f] text-white p-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
@@ -205,28 +205,28 @@ export default function TemplatesPage() {
             ← Back to Home
           </a>
           <h1 className="text-4xl font-bold mb-2">Workflow Templates</h1>
-          <p className="text-slate-400 text-lg">
+          <p className="text-slate-300 text-lg">
             Pre-built workflows you can use immediately. Click any template to customize and deploy.
           </p>
         </div>
 
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-          <div className="bg-slate-800 rounded-lg p-4 border border-slate-700">
+          <div className="bg-white/[0.03] rounded-2xl p-4 border border-white/10 backdrop-blur-xl">
             <div className="text-3xl font-bold text-blue-400">{templates.length}</div>
-            <div className="text-slate-400 text-sm">Templates</div>
+            <div className="text-slate-300 text-sm">Templates</div>
           </div>
-          <div className="bg-slate-800 rounded-lg p-4 border border-slate-700">
+          <div className="bg-white/[0.03] rounded-2xl p-4 border border-white/10 backdrop-blur-xl">
             <div className="text-3xl font-bold text-green-400">{categories.length - 1}</div>
-            <div className="text-slate-400 text-sm">Categories</div>
+            <div className="text-slate-300 text-sm">Categories</div>
           </div>
-          <div className="bg-slate-800 rounded-lg p-4 border border-slate-700">
+          <div className="bg-white/[0.03] rounded-2xl p-4 border border-white/10 backdrop-blur-xl">
             <div className="text-3xl font-bold text-purple-400">24/7</div>
-            <div className="text-slate-400 text-sm">Monitoring</div>
+            <div className="text-slate-300 text-sm">Monitoring</div>
           </div>
-          <div className="bg-slate-800 rounded-lg p-4 border border-slate-700">
+          <div className="bg-white/[0.03] rounded-2xl p-4 border border-white/10 backdrop-blur-xl">
             <div className="text-3xl font-bold text-yellow-400">$5-35</div>
-            <div className="text-slate-400 text-sm">Gas Range</div>
+            <div className="text-slate-300 text-sm">Gas Range</div>
           </div>
         </div>
 
@@ -240,7 +240,7 @@ export default function TemplatesPage() {
                 className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                   selectedCategory === cat
                     ? 'bg-blue-600 text-white'
-                    : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+                    : 'bg-white/[0.03] text-slate-300 hover:bg-white/[0.08]'
                 }`}
               >
                 {cat}
@@ -254,7 +254,7 @@ export default function TemplatesPage() {
           {filteredTemplates.map(template => (
             <div
               key={template.id}
-              className="bg-slate-800 rounded-lg p-6 border border-slate-700 hover:border-blue-500 transition-all cursor-pointer"
+              className="bg-white/[0.03] rounded-2xl p-6 border border-white/10 hover:border-cyan-400/60 transition-all cursor-pointer backdrop-blur-xl"
               onClick={() => setSelectedTemplate(template)}
             >
               {/* Header */}
@@ -273,7 +273,7 @@ export default function TemplatesPage() {
 
               {/* Title & Description */}
               <h3 className="text-xl font-bold mb-2">{template.name}</h3>
-              <p className="text-slate-400 text-sm mb-4">{template.description}</p>
+              <p className="text-slate-300 text-sm mb-4">{template.description}</p>
 
               {/* Category */}
               <div className="mb-4">
@@ -295,7 +295,7 @@ export default function TemplatesPage() {
               </div>
 
               {/* Stats */}
-              <div className="flex items-center justify-between text-xs text-slate-400 mb-4">
+              <div className="flex items-center justify-between text-xs text-slate-300 mb-4">
                 <span>Gas: {template.estimatedGas}</span>
                 <span>⭐ {template.popularity}% popular</span>
               </div>
@@ -321,7 +321,7 @@ export default function TemplatesPage() {
             onClick={() => setSelectedTemplate(null)}
           >
             <div
-              className="bg-slate-800 rounded-lg p-8 max-w-2xl w-full border border-slate-700"
+              className="bg-white/[0.04] rounded-2xl p-8 max-w-2xl w-full border border-white/10 backdrop-blur-xl"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-start justify-between mb-6">
@@ -329,12 +329,12 @@ export default function TemplatesPage() {
                   <div className="text-5xl">{selectedTemplate.icon}</div>
                   <div>
                     <h2 className="text-2xl font-bold">{selectedTemplate.name}</h2>
-                    <p className="text-slate-400">{selectedTemplate.category}</p>
+                    <p className="text-slate-300">{selectedTemplate.category}</p>
                   </div>
                 </div>
                 <button
                   onClick={() => setSelectedTemplate(null)}
-                  className="text-slate-400 hover:text-white text-2xl"
+                  className="text-slate-300 hover:text-white text-2xl"
                 >
                   ×
                 </button>
@@ -374,16 +374,16 @@ export default function TemplatesPage() {
 
                 {/* Metadata */}
                 <div className="grid grid-cols-3 gap-4">
-                  <div className="bg-slate-900 rounded p-3">
-                    <div className="text-xs text-slate-400 mb-1">Difficulty</div>
+                  <div className="bg-black/30 rounded p-3">
+                    <div className="text-xs text-slate-300 mb-1">Difficulty</div>
                     <div className="font-medium">{selectedTemplate.difficulty}</div>
                   </div>
-                  <div className="bg-slate-900 rounded p-3">
-                    <div className="text-xs text-slate-400 mb-1">Est. Gas</div>
+                  <div className="bg-black/30 rounded p-3">
+                    <div className="text-xs text-slate-300 mb-1">Est. Gas</div>
                     <div className="font-medium">{selectedTemplate.estimatedGas}</div>
                   </div>
-                  <div className="bg-slate-900 rounded p-3">
-                    <div className="text-xs text-slate-400 mb-1">Popularity</div>
+                  <div className="bg-black/30 rounded p-3">
+                    <div className="text-xs text-slate-300 mb-1">Popularity</div>
                     <div className="font-medium">{selectedTemplate.popularity}%</div>
                   </div>
                 </div>
