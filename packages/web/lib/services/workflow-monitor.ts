@@ -15,6 +15,19 @@ export class WorkflowMonitor {
     this.notificationService = new NotificationService();
   }
 
+
+  private normalizeConditionType(type?: string): string {
+    return (type || '').toLowerCase();
+  }
+
+  private normalizeActionType(type?: string): string {
+    return (type || '').toLowerCase();
+  }
+
+  private isRequiredCondition(condition: any): boolean {
+    return condition?.required === true || condition?.priority === 'REQUIRED';
+  }
+
   /**
    * Check all active workflows
    * Called by cron job every minute
@@ -194,18 +207,26 @@ export class WorkflowMonitor {
    * Check a single condition
    */
   private async checkCondition(condition: any): Promise<boolean> {
-    switch (condition.type) {
+    const conditionType = this.normalizeConditionType(condition?.type);
+
+    switch (conditionType) {
+      case "composite":
+        return this.checkCompositeCondition(condition);
+
       case "price_threshold":
         return this.checkPriceThreshold(condition);
-      
+
+      case "gas_threshold":
+        return this.checkGasThreshold(condition);
+
       case "time_based":
         return this.checkTimeBased(condition);
-      
+
       case "portfolio_value":
         return this.checkPortfolioValue(condition);
-      
+
       default:
-        console.warn(`[Workflow Monitor] Unknown condition type: ${condition.type}`);
+        console.warn(`[Workflow Monitor] Unknown condition type: ${condition?.type}`);
         return false;
     }
   }
@@ -214,7 +235,9 @@ export class WorkflowMonitor {
    * Check price threshold condition
    */
   private async checkPriceThreshold(condition: any): Promise<boolean> {
-    const { coinId, operator, value } = condition;
+    const coinId = condition.coinId || condition.token;
+    const operator = condition.operator || condition.comparison;
+    const value = condition.value ?? condition.threshold;
 
     const currentPrice = await this.priceOracle.getPrice(coinId);
     
@@ -247,34 +270,108 @@ export class WorkflowMonitor {
     return met;
   }
 
+
+  /**
+   * Check composite condition (AND/OR) with optional preferred rules
+   */
+  private async checkCompositeCondition(condition: any): Promise<boolean> {
+    const childConditions = Array.isArray(condition?.conditions) ? condition.conditions : [];
+
+    if (childConditions.length === 0) {
+      return false;
+    }
+
+    const evaluated = await Promise.all(
+      childConditions.map(async (child: any) => ({
+        child,
+        met: await this.checkCondition(child),
+      }))
+    );
+
+    const required = evaluated.filter(({ child }) => this.isRequiredCondition(child));
+    const preferred = evaluated.filter(({ child }) => !this.isRequiredCondition(child));
+
+    if (required.length > 0 && required.some(({ met }) => !met)) {
+      return false;
+    }
+
+    const operator = (condition?.operator || 'AND').toUpperCase();
+
+    if (operator === 'OR') {
+      if (required.length > 0) {
+        return true;
+      }
+
+      return preferred.some(({ met }) => met);
+    }
+
+    if (preferred.length > 0) {
+      return preferred.every(({ met }) => met);
+    }
+
+    return true;
+  }
+
+  /**
+   * Check gas threshold condition
+   */
+  private checkGasThreshold(condition: any): boolean {
+    const network = (condition.network || 'ethereum').toLowerCase();
+    const operator = condition.operator || condition.comparison || 'below';
+    const value = Number(condition.value ?? condition.threshold);
+
+    const fallbackGasByNetwork: Record<string, number> = {
+      ethereum: 25,
+      polygon: 50,
+      arbitrum: 0.1,
+      optimism: 0.3,
+      base: 0.2,
+    };
+
+    const currentGas = fallbackGasByNetwork[network];
+    if (typeof currentGas !== 'number') {
+      console.warn(`[Workflow Monitor] Unknown gas network: ${network}`);
+      return false;
+    }
+
+    if (operator === 'below') {
+      return currentGas < value;
+    }
+
+    if (operator === 'above') {
+      return currentGas > value;
+    }
+
+    console.warn(`[Workflow Monitor] Unknown gas operator: ${operator}`);
+    return false;
+  }
+
   /**
    * Check time-based condition
    */
   private checkTimeBased(condition: any): boolean {
-    const { schedule, lastExecuted } = condition;
+    const schedule = (condition?.schedule || 'daily').toLowerCase();
+    const lastExecuted = condition?.lastExecuted;
+    if (!lastExecuted) return true;
+
     const now = new Date();
+    const lastExec = new Date(lastExecuted);
+    const elapsedMs = now.getTime() - lastExec.getTime();
 
-    // Simple daily check
-    if (schedule === "daily") {
-      if (!lastExecuted) return true;
-      
-      const lastExec = new Date(lastExecuted);
-      const hoursSince = (now.getTime() - lastExec.getTime()) / (1000 * 60 * 60);
-      
-      return hoursSince >= 24;
+    const scheduleIntervals: Record<string, number> = {
+      hourly: 1000 * 60 * 60,
+      daily: 1000 * 60 * 60 * 24,
+      weekly: 1000 * 60 * 60 * 24 * 7,
+      monthly: 1000 * 60 * 60 * 24 * 30,
+    };
+
+    const interval = scheduleIntervals[schedule];
+    if (!interval) {
+      console.warn(`[Workflow Monitor] Unknown schedule: ${schedule}`);
+      return false;
     }
 
-    // Weekly check
-    if (schedule === "weekly") {
-      if (!lastExecuted) return true;
-      
-      const lastExec = new Date(lastExecuted);
-      const daysSince = (now.getTime() - lastExec.getTime()) / (1000 * 60 * 60 * 24);
-      
-      return daysSince >= 7;
-    }
-
-    return false;
+    return elapsedMs >= interval;
   }
 
   /**
@@ -337,18 +434,21 @@ export class WorkflowMonitor {
    * Execute a single action
    */
   private async executeAction(action: any, userId: string): Promise<any> {
-    switch (action.type) {
+    const actionType = this.normalizeActionType(action?.type);
+
+    switch (actionType) {
       case "sideshift_swap":
+      case "cross_chain_swap":
         return this.executeSideShiftSwap(action, userId);
-      
+
       case "notification":
         return this.executeNotification(action, userId);
-      
+
       case "webhook":
         return this.executeWebhook(action);
-      
+
       default:
-        throw new Error(`Unknown action type: ${action.type}`);
+        throw new Error(`Unknown action type: ${action?.type}`);
     }
   }
 
