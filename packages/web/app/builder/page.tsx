@@ -8,6 +8,7 @@ import { useSession } from 'next-auth/react';
 
 type ConditionType = 'PRICE_THRESHOLD' | 'GAS_THRESHOLD' | 'TIME_BASED' | 'COMPOSITE_AND' | 'COMPOSITE_OR';
 type ActionType = 'CROSS_CHAIN_SWAP' | 'NOTIFICATION' | 'WEBHOOK' | 'MULTI_STEP';
+type PriorityType = 'REQUIRED' | 'PREFERRED';
 
 export default function WorkflowBuilder() {
   const router = useRouter();
@@ -91,6 +92,9 @@ export default function WorkflowBuilder() {
   const [gasNetwork, setGasNetwork] = useState('ethereum');
   const [gasComparison, setGasComparison] = useState<'above' | 'below'>('below');
   const [gasThreshold, setGasThreshold] = useState('20');
+  const [timeSchedule, setTimeSchedule] = useState<'hourly' | 'daily' | 'weekly' | 'monthly'>('daily');
+  const [includeSecondaryCondition, setIncludeSecondaryCondition] = useState(true);
+  const [secondaryConditionPriority, setSecondaryConditionPriority] = useState<PriorityType>('PREFERRED');
 
   // Swap action state
   const [depositCoin, setDepositCoin] = useState('eth');
@@ -115,26 +119,115 @@ export default function WorkflowBuilder() {
     const preview = generateWorkflowPreview();
     setWorkflowPreview(preview);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [workflowName, conditionType, actionType, token, threshold, depositCoin, settleCoin, amount]);
+  }, [workflowName, conditionType, actionType, token, comparison, threshold, gasNetwork, gasComparison, gasThreshold, timeSchedule, includeSecondaryCondition, secondaryConditionPriority, depositCoin, settleCoin, amount]);
+
+  const isCompositeCondition = conditionType === 'COMPOSITE_AND' || conditionType === 'COMPOSITE_OR';
+
+  const buildPriceCondition = () => ({
+    type: 'PRICE_THRESHOLD',
+    token,
+    comparison,
+    threshold: parseFloat(threshold),
+    currency: 'USD',
+  });
+
+  const buildGasCondition = () => ({
+    type: 'GAS_THRESHOLD',
+    network: gasNetwork,
+    comparison: gasComparison,
+    threshold: parseFloat(gasThreshold),
+  });
+
+  const buildConditionsPayload = () => {
+    if (isCompositeCondition) {
+      const childConditions: Array<Record<string, unknown>> = [
+        {
+          ...buildPriceCondition(),
+          priority: 'REQUIRED',
+          required: true,
+        },
+      ];
+
+      if (includeSecondaryCondition) {
+        childConditions.push({
+          ...buildGasCondition(),
+          priority: secondaryConditionPriority,
+          required: secondaryConditionPriority === 'REQUIRED',
+        });
+      }
+
+      return [
+        {
+          type: 'COMPOSITE',
+          operator: conditionType === 'COMPOSITE_AND' ? 'AND' : 'OR',
+          conditionType,
+          conditions: childConditions,
+        },
+      ];
+    }
+
+    if (conditionType === 'PRICE_THRESHOLD') {
+      return [buildPriceCondition()];
+    }
+
+    if (conditionType === 'GAS_THRESHOLD') {
+      return [buildGasCondition()];
+    }
+
+    return [{ type: 'TIME_BASED', schedule: timeSchedule }];
+  };
+
+  const getConditionSummary = () => {
+    if (conditionType === 'PRICE_THRESHOLD') {
+      return `${token} price is ${comparison} $${threshold}`;
+    }
+
+    if (conditionType === 'GAS_THRESHOLD') {
+      return `${gasNetwork} gas is ${gasComparison} ${gasThreshold} gwei`;
+    }
+
+    if (conditionType === 'TIME_BASED') {
+      return `Run on ${timeSchedule} schedule`;
+    }
+
+    const operatorLabel = conditionType === 'COMPOSITE_AND' ? 'AND' : 'OR';
+    const gasClause = includeSecondaryCondition
+      ? ` ${operatorLabel} ${gasNetwork} gas is ${gasComparison} ${gasThreshold} gwei (${secondaryConditionPriority === 'REQUIRED' ? 'must-have' : 'optional'})`
+      : '';
+
+    return `${token} price is ${comparison} $${threshold}${gasClause}`;
+  };
+
+
+  const parseWebhookBody = () => {
+    try {
+      return JSON.parse(webhookBody || '{}');
+    } catch {
+      throw new Error('Webhook body must be valid JSON');
+    }
+  };
+
+  const getActionSummary = () => {
+    if (actionType === 'CROSS_CHAIN_SWAP') {
+      return `Swap ${amount} ${depositCoin} (${depositNetwork}) → ${settleCoin} (${settleNetwork})`;
+    }
+
+    if (actionType === 'NOTIFICATION') {
+      return `Send notification: ${notificationTitle}`;
+    }
+
+    if (actionType === 'WEBHOOK') {
+      return `Call webhook (${webhookMethod}) ${webhookUrl || 'URL not set'}`;
+    }
+
+    return 'Execute multi-step flow (coming soon)';
+  };
 
   const generateWorkflowPreview = () => {
     const workflow = {
       name: workflowName || 'Untitled Workflow',
       description: `Auto-generated workflow`,
-      condition: {
-        type: conditionType,
-        ...(conditionType === 'PRICE_THRESHOLD' && {
-          token,
-          comparison,
-          threshold: parseFloat(threshold),
-          currency: 'USD',
-        }),
-        ...(conditionType === 'GAS_THRESHOLD' && {
-          network: gasNetwork,
-          comparison: gasComparison,
-          threshold: parseFloat(gasThreshold),
-        }),
-      },
+      condition: buildConditionsPayload()[0],
       actions: [
         {
           type: actionType,
@@ -154,7 +247,7 @@ export default function WorkflowBuilder() {
           ...(actionType === 'WEBHOOK' && {
             url: webhookUrl,
             method: webhookMethod,
-            body: JSON.parse(webhookBody || '{}'),
+            body: parseWebhookBody(),
           }),
         },
       ],
@@ -218,22 +311,7 @@ export default function WorkflowBuilder() {
       const workflowData = {
         name: workflowName,
         description: `Auto-generated workflow`,
-        conditions: [
-          {
-            type: conditionType,
-            ...(conditionType === 'PRICE_THRESHOLD' && {
-              token,
-              comparison,
-              threshold: parseFloat(threshold),
-              currency: 'USD',
-            }),
-            ...(conditionType === 'GAS_THRESHOLD' && {
-              network: gasNetwork,
-              comparison: gasComparison,
-              threshold: parseFloat(gasThreshold),
-            }),
-          },
-        ],
+        conditions: buildConditionsPayload(),
         actions: [
           {
             type: actionType,
@@ -253,7 +331,7 @@ export default function WorkflowBuilder() {
             ...(actionType === 'WEBHOOK' && {
               url: webhookUrl,
               method: webhookMethod,
-              body: JSON.parse(webhookBody || '{}'),
+              body: parseWebhookBody(),
             }),
           },
         ],
@@ -298,11 +376,22 @@ export default function WorkflowBuilder() {
       return;
     }
 
-    if (!settleAddress.trim()) {
+    if (actionType === 'CROSS_CHAIN_SWAP' && !settleAddress.trim()) {
       setDeployStatus('error');
       setStatusMessage('Please enter a settle address for the swap');
       setTimeout(() => setDeployStatus('idle'), 3000);
       return;
+    }
+
+    if (actionType === 'WEBHOOK') {
+      try {
+        parseWebhookBody();
+      } catch (error) {
+        setDeployStatus('error');
+        setStatusMessage((error as Error).message);
+        setTimeout(() => setDeployStatus('idle'), 3000);
+        return;
+      }
     }
 
     if (useSafe && !safeAddress.trim()) {
@@ -326,22 +415,7 @@ export default function WorkflowBuilder() {
       const workflowData = {
         name: workflowName,
         description: `Auto-generated workflow`,
-        conditions: [
-          {
-            type: conditionType,
-            ...(conditionType === 'PRICE_THRESHOLD' && {
-              token,
-              comparison,
-              threshold: parseFloat(threshold),
-              currency: 'USD',
-            }),
-            ...(conditionType === 'GAS_THRESHOLD' && {
-              network: gasNetwork,
-              comparison: gasComparison,
-              threshold: parseFloat(gasThreshold),
-            }),
-          },
-        ],
+        conditions: buildConditionsPayload(),
         actions: [
           {
             type: actionType,
@@ -352,6 +426,16 @@ export default function WorkflowBuilder() {
               settleNetwork,
               amount: parseFloat(amount),
               settleAddress,
+            }),
+            ...(actionType === 'NOTIFICATION' && {
+              title: notificationTitle,
+              message: notificationMessage,
+              email: notificationEmail,
+            }),
+            ...(actionType === 'WEBHOOK' && {
+              url: webhookUrl,
+              method: webhookMethod,
+              body: parseWebhookBody(),
             }),
           },
         ],
@@ -546,6 +630,8 @@ export default function WorkflowBuilder() {
                         Schedule
                       </label>
                       <select
+                        value={timeSchedule}
+                        onChange={(e) => setTimeSchedule(e.target.value as 'hourly' | 'daily' | 'weekly' | 'monthly')}
                         className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-blue-500"
                       >
                         <option value="hourly">Every Hour</option>
@@ -562,6 +648,133 @@ export default function WorkflowBuilder() {
                   </>
                 )}
 
+
+
+                {isCompositeCondition && (
+                  <>
+                    <div className="p-4 bg-purple-900/20 border border-purple-700 rounded-lg">
+                      <p className="text-purple-300 text-sm">
+                        💡 Combine a primary price trigger with an optional gas preference. Set gas as required or optional based on execution priority.
+                      </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-slate-300 mb-2">
+                          Primary Token
+                        </label>
+                        <select
+                          value={token}
+                          onChange={(e) => setToken(e.target.value)}
+                          className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                        >
+                          <option value="BTC">BTC - Bitcoin</option>
+                          <option value="ETH">ETH - Ethereum</option>
+                          <option value="BNB">BNB - Binance Coin</option>
+                          <option value="SOL">SOL - Solana</option>
+                          <option value="XRP">XRP - Ripple</option>
+                          <option value="ADA">ADA - Cardano</option>
+                          <option value="AVAX">AVAX - Avalanche</option>
+                          <option value="DOT">DOT - Polkadot</option>
+                          <option value="MATIC">MATIC - Polygon</option>
+                          <option value="LINK">LINK - Chainlink</option>
+                          <option value="UNI">UNI - Uniswap</option>
+                          <option value="ATOM">ATOM - Cosmos</option>
+                          <option value="USDT">USDT - Tether</option>
+                          <option value="USDC">USDC - USD Coin</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-slate-300 mb-2">
+                          Primary Comparison
+                        </label>
+                        <select
+                          value={comparison}
+                          onChange={(e) => setComparison(e.target.value as 'above' | 'below')}
+                          className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                        >
+                          <option value="below">Below</option>
+                          <option value="above">Above</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-slate-300 mb-2">
+                        Primary Threshold (USD)
+                      </label>
+                      <input
+                        type="number"
+                        value={threshold}
+                        onChange={(e) => setThreshold(e.target.value)}
+                        className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                      />
+                    </div>
+
+                    <label className="flex items-center gap-3 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={includeSecondaryCondition}
+                        onChange={(e) => setIncludeSecondaryCondition(e.target.checked)}
+                        className="w-4 h-4 text-blue-600 bg-slate-900 border-slate-700 rounded focus:ring-blue-500"
+                      />
+                      <span className="text-slate-300 text-sm">Add gas condition as secondary rule</span>
+                    </label>
+
+                    {includeSecondaryCondition && (
+                      <div className="space-y-4 p-4 bg-slate-900/50 border border-slate-700 rounded-lg">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-medium text-slate-300 mb-2">Gas Network</label>
+                            <select
+                              value={gasNetwork}
+                              onChange={(e) => setGasNetwork(e.target.value)}
+                              className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                            >
+                              <option value="ethereum">Ethereum</option>
+                              <option value="polygon">Polygon</option>
+                              <option value="arbitrum">Arbitrum</option>
+                            </select>
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-slate-300 mb-2">Gas Comparison</label>
+                            <select
+                              value={gasComparison}
+                              onChange={(e) => setGasComparison(e.target.value as 'above' | 'below')}
+                              className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                            >
+                              <option value="below">Below</option>
+                              <option value="above">Above</option>
+                            </select>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-medium text-slate-300 mb-2">Gas Threshold (gwei)</label>
+                            <input
+                              type="number"
+                              value={gasThreshold}
+                              onChange={(e) => setGasThreshold(e.target.value)}
+                              className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-slate-300 mb-2">Secondary Priority</label>
+                            <select
+                              value={secondaryConditionPriority}
+                              onChange={(e) => setSecondaryConditionPriority(e.target.value as PriorityType)}
+                              className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                            >
+                              <option value="PREFERRED">Preferred (nice-to-have)</option>
+                              <option value="REQUIRED">Required (must-have)</option>
+                            </select>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </>
+                )}
                 {conditionType === 'PRICE_THRESHOLD' && (
                   <>
                     {/* Live Price Display */}
@@ -913,12 +1126,11 @@ export default function WorkflowBuilder() {
               <div className="mb-4 p-4 bg-blue-900/20 border border-blue-700 rounded-lg">
                 <p className="text-blue-300 text-sm">
                   <strong>When:</strong>{' '}
-                  {conditionType === 'PRICE_THRESHOLD' && `${token} price is ${comparison} $${threshold}`}
-                  {conditionType === 'GAS_THRESHOLD' && `${gasNetwork} gas is ${gasComparison} ${gasThreshold} gwei`}
+                  {getConditionSummary()}
                   {useSafe && ' (via Safe multi-sig)'}
                 </p>
                 <p className="text-blue-300 text-sm mt-2">
-                  <strong>Then:</strong> Swap {amount} {depositCoin} ({depositNetwork}) → {settleCoin} ({settleNetwork})
+                  <strong>Then:</strong> {getActionSummary()}
                 </p>
               </div>
 
@@ -987,7 +1199,7 @@ export default function WorkflowBuilder() {
               <ul className="space-y-2 text-sm text-slate-400">
                 <li>✅ Smart Account (Safe) integration</li>
                 <li>✅ Multi-condition workflows (AND/OR)</li>
-                <li>✅ Multi-step actions</li>
+                <li>🚧 Multi-step actions (coming soon)</li>
                 <li>✅ Price-based triggers</li>
                 <li>✅ Gas price optimization</li>
                 <li>✅ Time-based scheduling</li>
