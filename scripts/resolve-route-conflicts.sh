@@ -23,12 +23,21 @@ write_wrapper "packages/web/app/templates/page.tsx" "TemplatesPage"
 write_wrapper "packages/web/app/dashboard/page.tsx" "DashboardPage"
 write_wrapper "packages/web/app/api-test/page.tsx" "ApiTestPage"
 
+cat > "$ROOT_DIR/packages/web/app/page.tsx" <<EOT
+import PremiumHome from '@/components/home/PremiumHome';
+
+export default function Home() {
+  return <PremiumHome />;
+}
+EOT
+
 # Verify no merge markers remain in these route wrappers
 if rg -n "^<<<<<<<|^=======|^>>>>>>>" \
   "$ROOT_DIR/packages/web/app/builder/page.tsx" \
   "$ROOT_DIR/packages/web/app/templates/page.tsx" \
   "$ROOT_DIR/packages/web/app/dashboard/page.tsx" \
-  "$ROOT_DIR/packages/web/app/api-test/page.tsx" >/dev/null; then
+  "$ROOT_DIR/packages/web/app/api-test/page.tsx" \
+  "$ROOT_DIR/packages/web/app/page.tsx" >/dev/null; then
   echo "Conflict markers still detected in route wrappers." >&2
   exit 1
 fi
