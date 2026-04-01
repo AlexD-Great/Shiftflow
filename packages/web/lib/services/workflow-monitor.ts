@@ -1,6 +1,8 @@
 import { prisma } from "@/lib/prisma";
 import { PriceOracleService } from "./price-oracle";
 import { NotificationService } from "./notification-service";
+import { createExecutionReceipt } from "@/lib/execution-receipts";
+import { Prisma } from "@prisma/client";
 
 /**
  * Workflow Monitor Service
@@ -113,12 +115,34 @@ export class WorkflowMonitor {
     try {
       await this.executeActions(workflow.actions, execution.id, workflow.userId);
 
+      const executionDetails = await prisma.execution.findUnique({
+        where: { id: execution.id },
+        select: { actionResults: true, txHash: true },
+      });
+
+      const receiptResult = await createExecutionReceipt({
+        workflowId: workflow.id,
+        type: "TRADING",
+        conditionSnapshot: workflow.conditions,
+        actionsSnapshot: executionDetails?.actionResults || workflow.actions,
+        status: "SUCCESS",
+        txHash: executionDetails?.txHash || undefined,
+      });
+
       // Mark execution as completed
       await prisma.execution.update({
         where: { id: execution.id },
         data: {
           status: "COMPLETED",
           completedAt: new Date(),
+          actionResults: {
+            ...(Array.isArray(executionDetails?.actionResults)
+              ? { steps: executionDetails?.actionResults }
+              : { previous: executionDetails?.actionResults }),
+            receipt: receiptResult.receipt,
+            receiptHash: receiptResult.receiptHash,
+            anchorTxHash: receiptResult.anchorTxHash,
+          } as Prisma.InputJsonValue,
         },
       });
 
@@ -140,23 +164,30 @@ export class WorkflowMonitor {
         },
       });
 
-      // Get execution details for notification
-      const executionDetails = await prisma.execution.findUnique({
-        where: { id: execution.id },
-        select: { actionResults: true },
-      });
-
       // Send success notifications
       await this.notificationService.notifyWorkflowExecution(
         workflow.userId,
         workflow.name,
         execution.id,
         "success",
-        executionDetails?.actionResults || {}
+        {
+          ...(executionDetails?.actionResults as object || {}),
+          receiptHash: receiptResult.receiptHash,
+          anchorTxHash: receiptResult.anchorTxHash,
+        }
       );
 
       console.log(`[Workflow Monitor] ✅ Executed workflow ${workflow.id}`);
     } catch (error) {
+      const failedReceipt = await createExecutionReceipt({
+        workflowId: workflow.id,
+        type: "TRADING",
+        conditionSnapshot: workflow.conditions,
+        actionsSnapshot: workflow.actions,
+        status: "FAILED",
+        error: (error as Error).message,
+      });
+
       // Mark execution as failed
       await prisma.execution.update({
         where: { id: execution.id },
@@ -164,6 +195,11 @@ export class WorkflowMonitor {
           status: "FAILED",
           error: (error as Error).message,
           errorStack: (error as Error).stack,
+          actionResults: {
+            receipt: failedReceipt.receipt,
+            receiptHash: failedReceipt.receiptHash,
+            anchorTxHash: failedReceipt.anchorTxHash,
+          } as Prisma.InputJsonValue,
         },
       });
 
@@ -183,7 +219,12 @@ export class WorkflowMonitor {
         workflow.name,
         execution.id,
         "failed",
-        { error: (error as Error).message, stack: (error as Error).stack }
+        {
+          error: (error as Error).message,
+          stack: (error as Error).stack,
+          receiptHash: failedReceipt.receiptHash,
+          anchorTxHash: failedReceipt.anchorTxHash,
+        }
       );
 
       console.error(`[Workflow Monitor] ❌ Failed to execute workflow ${workflow.id}:`, error);
