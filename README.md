@@ -11,24 +11,61 @@
   </p>
 
   <p>
-    <strong>🏆 Built for SideShift Hackathon 2025</strong>
+    <strong>🏆 Built for PL Genesis: Frontiers of Collaboration Hackathon (2026)</strong>
   </p>
 </div>
 
 ---
 
-## 📸 Screenshots
+## ✨ What ShiftFlow Does
 
-<div align="center">
-  <img src="./screenshots/homepage.png" alt="ShiftFlow Homepage" width="800"/>
-  <p><em>Homepage - Clean landing with value proposition</em></p>
-  
-  <img src="./screenshots/builder.png" alt="Workflow Builder" width="800"/>
-  <p><em>Workflow Builder - Visual interface with live price data and smart dropdowns</em></p>
-  
-  <img src="./screenshots/dashboard.png" alt="Dashboard" width="800"/>
-  <p><em>Dashboard - Real-time monitoring with execution history</em></p>
-</div>
+ShiftFlow is a **conditional automation platform for cross-chain DeFi operations**.
+
+You define conditions (price, gas, and time), and ShiftFlow monitors + executes actions when those rules are met.
+
+Core value:
+- Stop manual monitoring of market + gas conditions.
+- Automate recurring, rules-based execution.
+- Keep an execution trail that is auditable.
+
+---
+
+## 🏗️ What We Built for PL Genesis (Infrastructure Track)
+
+For this sprint, we focused on infrastructure primitives that improve execution trust and observability:
+
+### 1) Verifiable Execution Receipts
+- Every workflow run now creates a structured execution receipt.
+- Receipt payloads are deterministically serialized and hashed (`keccak256`).
+- Hashes can be used as tamper-evident execution proofs.
+
+### 2) Optional On-Chain Anchoring
+- Receipt hashes can be anchored to an EVM-compatible receipt registry contract.
+- Anchoring is configurable via environment variables (no hard dependency on a single chain).
+- This enables independent verification beyond the application database.
+
+### 3) Receipt-Aware Execution Lifecycle
+- Success/failure execution paths now attach `receipt`, `receiptHash`, and optional `anchorTxHash`.
+- Receipt metadata is propagated into execution data and notifications for easier auditability.
+
+---
+
+## 🚀 Key Features
+
+### ✅ Automation & Execution
+- Condition-based workflows (price, gas, time-based checks)
+- Cross-chain swap execution through SideShift
+- Cron-driven monitoring loop for active workflows
+
+### ✅ Infrastructure & Reliability
+- PostgreSQL + Prisma persistence for workflows and execution history
+- Execution logs and notifications for operational visibility
+- Optional verifiable receipt anchoring for external audit trails
+
+### ✅ Product Experience
+- Workflow builder for no-code strategy setup
+- Dashboard for monitoring active workflows and execution history
+- Wallet connectivity and optional Safe-compatible patterns
 
 ---
 
@@ -43,10 +80,6 @@ You want to swap ETH to BTC when the price dips below $3,000—but only when gas
 
 ---
 
-## ✨ What ShiftFlow Does
-
-ShiftFlow is a **conditional automation platform** for cross-chain DeFi. You define the conditions, we execute the actions.
-
 ### Real-World Examples:
 
 **🎯 Smart DCA Strategy**
@@ -57,42 +90,6 @@ ShiftFlow is a **conditional automation platform** for cross-chain DeFi. You def
 
 **⛽ Gas Optimization**
 > "Execute my treasury rebalancing, but wait for gas to drop below 20 gwei"
-
-**🔄 Auto-Rebalancing**
-> "Keep my portfolio 60% ETH, 40% BTC. Rebalance when it drifts more than 5%"
-
----
-
-## 🚀 Key Features
-
-### ✅ **Real API Integrations** (No Mocks!)
-
-- **🌐 SideShift API** - Real cross-chain swaps with 50+ coins across 12+ networks
-- **📊 CoinGecko API** - Live prices for 14 cryptocurrencies, updated every 60 seconds
-- **🔐 Safe SDK** - Multi-sig smart account integration for team treasuries
-- **⛓️ Blockchain Data** - Real wallet connection via Wagmi + Viem
-- **📧 Notification System** - Email and webhook alerts when workflows execute
-
-### 🎨 **Beautiful, Functional UI**
-
-- **Workflow Builder** - Visual interface with live price data and smart dropdowns
-- **Real-Time Dashboard** - Monitor active workflows with execution history
-- **API Test Page** - See all 14 cryptocurrencies with live prices in responsive grid
-- **Template Library** - 8 pre-built strategies to get started
-- **Responsive Design** - Works on desktop, tablet, and mobile
-- **Smart Validation** - Dropdown selectors prevent invalid coin/network combinations
-
-### 🔧 **Production-Ready Infrastructure**
-
-- **TypeScript** - 100% type-safe codebase
-- **Next.js 15** - Latest React framework with App Router
-- **PostgreSQL + Prisma** - Database persistence for workflows and execution history
-- **Vercel Deployment** - Fast, reliable hosting with auto-deploy
-- **Error Handling** - Styled error/success messages (no alerts!)
-- **Cron Monitoring** - Automated workflow checking every 60 seconds
-- **Backend API Proxy** - Secure SideShift and CoinGecko integration
-
----
 
 ## 🎬 How It Works
 
