@@ -490,6 +490,21 @@ We actively listen to our users! Recent additions based on beta testing:
 - 🐛 [Report Issues](https://github.com/AlexD-Great/Shiftflow/issues)
 - 📧 Contact: [Your Email/Discord]
 
+
+### **🧑‍⚖️ Judge Feedback Action Plan (Wave Follow-Up)**
+
+We took the latest judging feedback and translated it into execution priorities:
+
+- 🎯 **User Acquisition First**
+  - Launch a focused beta tester cohort and collect the top 5 recurring real-world workflows
+  - Prioritize templates by actual usage and completion rate
+- 🤖 **Automation Without Losing Safety**
+  - Keep Safe approval for sensitive actions while reducing unnecessary confirmation friction
+  - Add clearer execution modes (fully automatic vs approval-required) in UI
+- ✨ **Frontend Polish Sprint**
+  - Improve visual hierarchy, social proof, and onboarding clarity on homepage and builder
+  - Publish short wave-to-wave release notes so changes are obvious to returning users and judges
+
 ---
 
 ## 🧪 Testing the Live Site

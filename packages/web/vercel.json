@@ -5,5 +5,5 @@
       "schedule": "*/5 * * * *"
     }
   ],
-  "buildCommand": "npm run build -- --webpack"
+  "buildCommand": "prisma db push --accept-data-loss && next build --webpack"
 }
