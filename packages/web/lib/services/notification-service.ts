@@ -64,7 +64,7 @@ export class NotificationService {
   }
 
   /**
-   * Send email notification
+   * Send email notification via Resend (if RESEND_API_KEY is configured)
    */
   private async sendEmailNotification(
     userId: string,
@@ -72,37 +72,46 @@ export class NotificationService {
     status: "success" | "failed",
     details: any
   ): Promise<void> {
-    // Get user email
+    const resendApiKey = process.env.RESEND_API_KEY;
+    if (!resendApiKey) {
+      return; // Email not configured — skip silently
+    }
+
     const user = await prisma.user.findUnique({
       where: { id: userId },
       select: { email: true, name: true },
     });
 
     if (!user?.email) {
-      console.log(`[Notification Service] No email found for user ${userId}, skipping email`);
       return;
     }
 
-    // For now, log email content (in production, integrate with SendGrid, Resend, etc.)
-    const emailContent = this.generateEmailContent(
-      user.name || "User",
-      workflowName,
-      status,
-      details
-    );
+    const emailContent = this.generateEmailContent(user.name || "User", workflowName, status, details);
 
-    console.log(`[Notification Service] Email notification prepared for ${user.email}`);
-    console.log(`Subject: ${emailContent.subject}`);
-    console.log(`Body: ${emailContent.body}`);
+    try {
+      const response = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${resendApiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          from: "ShiftFlow <notifications@shiftflow.app>",
+          to: user.email,
+          subject: emailContent.subject,
+          html: emailContent.html,
+        }),
+      });
 
-    // TODO: Integrate with email service provider
-    // Example with Resend:
-    // await resend.emails.send({
-    //   from: 'ShiftFlow <notifications@shiftflow.app>',
-    //   to: user.email,
-    //   subject: emailContent.subject,
-    //   html: emailContent.html,
-    // });
+      if (!response.ok) {
+        const err = await response.json();
+        console.error(`[Notification Service] Resend error:`, err);
+      } else {
+        console.log(`[Notification Service] Email sent to ${user.email}`);
+      }
+    } catch (error) {
+      console.error("[Notification Service] Email send failed:", error);
+    }
   }
 
   /**

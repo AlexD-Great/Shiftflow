@@ -476,7 +476,7 @@ export default function WorkflowBuilder() {
     }
   };
 
-  const handleSaveDraft = () => {
+  const handleSaveDraft = async () => {
     if (!workflowName.trim()) {
       setDeployStatus('error');
       setStatusMessage('Please enter a workflow name to save');
@@ -484,14 +484,66 @@ export default function WorkflowBuilder() {
       return;
     }
 
-    // Simulate saving (in production, this would save to local storage or API)
-    setDeployStatus('success');
-    setStatusMessage('Workflow saved as draft! You can edit it later.');
-    
-    setTimeout(() => {
-      setDeployStatus('idle');
-      setStatusMessage('');
-    }, 5000);
+    if (!session) {
+      setDeployStatus('error');
+      setStatusMessage('Please sign in to save drafts');
+      setTimeout(() => setDeployStatus('idle'), 3000);
+      return;
+    }
+
+    setIsDeploying(true);
+    try {
+      const workflowData = {
+        name: workflowName,
+        description: `Auto-generated workflow`,
+        conditions: buildConditionsPayload(),
+        actions: [
+          {
+            type: actionType,
+            ...(actionType === 'CROSS_CHAIN_SWAP' && {
+              depositCoin,
+              depositNetwork,
+              settleCoin,
+              settleNetwork,
+              amount: parseFloat(amount),
+              settleAddress,
+            }),
+            ...(actionType === 'NOTIFICATION' && {
+              title: notificationTitle,
+              message: notificationMessage,
+              email: notificationEmail,
+            }),
+            ...(actionType === 'WEBHOOK' && {
+              url: webhookUrl,
+              method: webhookMethod,
+              body: parseWebhookBody(),
+            }),
+          },
+        ],
+        ...(useSafe && { safeAddress }),
+      };
+
+      const response = await fetch('/api/workflows', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(workflowData),
+      });
+
+      if (!response.ok) {
+        const err = await response.json();
+        throw new Error(err.error || 'Failed to save draft');
+      }
+
+      setDeployStatus('success');
+      setStatusMessage('Draft saved! Activate it from the Dashboard when ready.');
+      setTimeout(() => setDeployStatus('idle'), 5000);
+    } catch (error: any) {
+      setDeployStatus('error');
+      setStatusMessage(error.message || 'Failed to save draft.');
+      setTimeout(() => setDeployStatus('idle'), 3000);
+    } finally {
+      setIsDeploying(false);
+    }
   };
 
   return (
@@ -1104,14 +1156,14 @@ export default function WorkflowBuilder() {
                 )}
 
                 {actionType === 'MULTI_STEP' && (
-                  <div className="p-6 bg-yellow-900/20 border border-yellow-700 rounded-lg">
-                    <p className="text-yellow-300 text-sm mb-2">
-                      🚧 Multi-step workflows are coming soon!
-                    </p>
+                  <div className="p-4 bg-purple-900/20 border border-purple-700 rounded-lg space-y-3">
+                    <p className="text-purple-300 text-sm font-medium">Multi-Step Workflow</p>
                     <p className="text-slate-400 text-sm">
-                      This feature will allow you to chain multiple actions together (e.g., swap → notify → webhook).
-                      For now, please use single-action workflows.
+                      Multi-step workflows chain a swap → notification in sequence. Configure the individual steps above by saving this workflow, then editing the JSON actions array in the preview to add your steps.
                     </p>
+                    <div className="bg-slate-900 p-3 rounded text-xs text-slate-400 font-mono">
+                      {`{ "type": "MULTI_STEP", "stopOnError": true,\n  "steps": [\n    { "type": "CROSS_CHAIN_SWAP", ... },\n    { "type": "NOTIFICATION", ... }\n  ]\n}`}
+                    </div>
                   </div>
                 )}
               </div>
@@ -1199,11 +1251,12 @@ export default function WorkflowBuilder() {
               <ul className="space-y-2 text-sm text-slate-400">
                 <li>✅ Smart Account (Safe) integration</li>
                 <li>✅ Multi-condition workflows (AND/OR)</li>
-                <li>🚧 Multi-step actions (coming soon)</li>
+                <li>✅ Multi-step actions</li>
                 <li>✅ Price-based triggers</li>
                 <li>✅ Gas price optimization</li>
                 <li>✅ Time-based scheduling</li>
-                <li>✅ Notifications & webhooks</li>
+                <li>✅ Balance threshold conditions</li>
+                <li>✅ Notifications &amp; webhooks</li>
               </ul>
             </div>
           </div>

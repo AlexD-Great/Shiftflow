@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 
 interface GuestWorkflow {
@@ -31,16 +32,24 @@ interface AnalyticsStats {
   count: number;
 }
 
+const ADMIN_WALLETS = (process.env.NEXT_PUBLIC_ADMIN_WALLETS || '').toLowerCase().split(',').filter(Boolean);
+
 export default function TestDataPage() {
+  const { data: session, status } = useSession();
   const [guestWorkflows, setGuestWorkflows] = useState<GuestWorkflow[]>([]);
   const [analytics, setAnalytics] = useState<AnalyticsEvent[]>([]);
   const [stats, setStats] = useState<AnalyticsStats[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'workflows' | 'analytics'>('workflows');
 
+  const walletAddress = (session?.user as any)?.walletAddress?.toLowerCase() || '';
+  const isAdmin = ADMIN_WALLETS.length === 0
+    ? !!session?.user  // if no whitelist configured, any signed-in user can access
+    : ADMIN_WALLETS.includes(walletAddress);
+
   useEffect(() => {
-    fetchData();
-  }, []);
+    if (isAdmin) fetchData();
+  }, [isAdmin]);
 
   const fetchData = async () => {
     setLoading(true);
@@ -61,6 +70,28 @@ export default function TestDataPage() {
       setLoading(false);
     }
   };
+
+  if (status === 'loading') {
+    return (
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+      </div>
+    );
+  }
+
+  if (!isAdmin) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-2xl font-bold text-white mb-4">Access Denied</p>
+          <p className="text-slate-400 mb-6">You must be signed in as an admin to view this page.</p>
+          <Link href="/" className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors">
+            Back to Home
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-950">

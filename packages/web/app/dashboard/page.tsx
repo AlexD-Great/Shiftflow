@@ -1,7 +1,20 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
+
+interface Execution {
+  id: string;
+  workflowId: string;
+  status: string;
+  conditionsMet: boolean;
+  actionResults: any;
+  error?: string;
+  createdAt: string;
+  completedAt?: string;
+  workflow: { name: string };
+  logs: Array<{ id: string; level: string; message: string; createdAt: string }>;
+}
 
 /**
  * Dashboard - Real-time workflow monitoring
@@ -10,18 +23,17 @@ import { useSession } from 'next-auth/react';
 export default function Dashboard() {
   const { data: session } = useSession();
   const [workflows, setWorkflows] = useState<any[]>([]);
+  const [executions, setExecutions] = useState<Execution[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const [actionSuccess, setActionSuccess] = useState<string | null>(null);
+  const [expandedExecution, setExpandedExecution] = useState<string | null>(null);
 
-  // Load workflows from database API
-  const fetchWorkflows = async () => {
+  const fetchWorkflows = useCallback(async () => {
     try {
       const response = await fetch('/api/workflows');
-      if (!response.ok) {
-        throw new Error('Failed to fetch workflows');
-      }
+      if (!response.ok) throw new Error('Failed to fetch workflows');
       const data = await response.json();
       setWorkflows(data.workflows || []);
       setError(null);
@@ -30,17 +42,30 @@ export default function Dashboard() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  const fetchExecutions = useCallback(async () => {
+    try {
+      const response = await fetch('/api/executions?limit=20');
+      if (!response.ok) return;
+      const data = await response.json();
+      setExecutions(data.executions || []);
+    } catch {
+      // non-critical
+    }
+  }, []);
 
   useEffect(() => {
     if (session) {
       fetchWorkflows();
-      
-      // Refresh every 10 seconds
-      const interval = setInterval(fetchWorkflows, 10000);
+      fetchExecutions();
+      const interval = setInterval(() => {
+        fetchWorkflows();
+        fetchExecutions();
+      }, 15000);
       return () => clearInterval(interval);
     }
-  }, [session]);
+  }, [session, fetchWorkflows, fetchExecutions]);
 
   const handleDeleteWorkflow = async (workflowId: string) => {
     if (!confirm('Are you sure you want to delete this workflow?')) {
@@ -350,37 +375,93 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Workflow Details */}
+          {/* Execution History */}
           <div>
-            <h2 className="text-2xl font-semibold text-white mb-4">Recent Activity</h2>
-            <div className="bg-slate-800 p-6 rounded-lg border border-slate-700">
-              {workflows.length === 0 ? (
-                <div className="text-center py-8">
-                  <p className="text-slate-400">No activity yet</p>
-                  <p className="text-slate-500 text-sm mt-2">Create a workflow to get started</p>
+            <h2 className="text-2xl font-semibold text-white mb-4">Execution History</h2>
+            <div className="space-y-3">
+              {!session ? (
+                <div className="bg-slate-800 p-8 rounded-lg border border-slate-700 text-center">
+                  <p className="text-slate-400">Sign in to view execution history</p>
+                </div>
+              ) : executions.length === 0 ? (
+                <div className="bg-slate-800 p-8 rounded-lg border border-slate-700 text-center">
+                  <p className="text-slate-400">No executions yet</p>
+                  <p className="text-slate-500 text-sm mt-2">Activate a workflow to start monitoring</p>
                 </div>
               ) : (
-                <div className="space-y-3">
-                  <div className="flex items-center gap-3 text-sm">
-                    <span className="w-2 h-2 bg-blue-400 rounded-full"></span>
-                    <span className="text-slate-300">Total workflows: {workflows.length}</span>
-                    <span className="text-slate-500 ml-auto">{currentTime.toLocaleTimeString()}</span>
-                  </div>
-                  <div className="flex items-center gap-3 text-sm">
-                    <span className="w-2 h-2 bg-green-400 rounded-full"></span>
-                    <span className="text-slate-300">Active: {workflows.filter(w => w.status === 'ACTIVE').length}</span>
-                  </div>
-                  <div className="flex items-center gap-3 text-sm">
-                    <span className="w-2 h-2 bg-purple-400 rounded-full"></span>
-                    <span className="text-slate-300">Safe multi-sig: {workflows.filter(w => w.safeAddress).length}</span>
-                  </div>
-                  {error && (
-                    <div className="flex items-center gap-3 text-sm">
-                      <span className="w-2 h-2 bg-red-400 rounded-full"></span>
-                      <span className="text-red-300">Error: {error}</span>
+                executions.map((exec) => (
+                  <div
+                    key={exec.id}
+                    className={`bg-slate-800 rounded-lg border transition-colors ${
+                      exec.status === 'COMPLETED' ? 'border-green-800' :
+                      exec.status === 'FAILED' ? 'border-red-800' :
+                      exec.status === 'CONDITIONS_MET' ? 'border-blue-800' :
+                      'border-slate-700'
+                    }`}
+                  >
+                    <div
+                      className="p-4 cursor-pointer"
+                      onClick={() => setExpandedExecution(expandedExecution === exec.id ? null : exec.id)}
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-white truncate">{exec.workflow.name}</p>
+                          <p className="text-xs text-slate-400 mt-0.5">
+                            {new Date(exec.createdAt).toLocaleString()}
+                          </p>
+                        </div>
+                        <span className={`shrink-0 px-2 py-0.5 rounded text-xs font-medium ${
+                          exec.status === 'COMPLETED' ? 'bg-green-900/30 text-green-400' :
+                          exec.status === 'FAILED' ? 'bg-red-900/30 text-red-400' :
+                          exec.status === 'CONDITIONS_MET' ? 'bg-blue-900/30 text-blue-400' :
+                          exec.status === 'EXECUTING' ? 'bg-yellow-900/30 text-yellow-400' :
+                          'bg-slate-700 text-slate-400'
+                        }`}>
+                          {exec.status}
+                        </span>
+                      </div>
+                      {exec.status === 'FAILED' && exec.error && (
+                        <p className="text-xs text-red-400 mt-2 truncate">{exec.error}</p>
+                      )}
+                      {exec.status === 'COMPLETED' && exec.actionResults && (
+                        <p className="text-xs text-green-400 mt-1">
+                          {Array.isArray(exec.actionResults)
+                            ? `${exec.actionResults.length} action(s) completed`
+                            : 'Completed'}
+                        </p>
+                      )}
                     </div>
-                  )}
-                </div>
+
+                    {/* Expanded log view */}
+                    {expandedExecution === exec.id && exec.logs.length > 0 && (
+                      <div className="border-t border-slate-700 px-4 pb-4">
+                        <p className="text-xs text-slate-500 uppercase tracking-wider mt-3 mb-2">Execution Logs</p>
+                        <div className="space-y-1 max-h-48 overflow-y-auto">
+                          {exec.logs.map((log) => (
+                            <div key={log.id} className="flex gap-2 text-xs">
+                              <span className={`shrink-0 font-mono ${
+                                log.level === 'ERROR' ? 'text-red-400' :
+                                log.level === 'WARN' ? 'text-yellow-400' :
+                                'text-slate-400'
+                              }`}>
+                                {log.level.slice(0, 1)}
+                              </span>
+                              <span className="text-slate-300 break-all">{log.message}</span>
+                            </div>
+                          ))}
+                        </div>
+                        {exec.actionResults && (
+                          <div className="mt-3">
+                            <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">Results</p>
+                            <pre className="text-xs text-slate-300 bg-slate-900 p-2 rounded overflow-x-auto max-h-32">
+                              {JSON.stringify(exec.actionResults, null, 2)}
+                            </pre>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                ))
               )}
             </div>
           </div>

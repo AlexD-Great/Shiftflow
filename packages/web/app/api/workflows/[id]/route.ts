@@ -2,6 +2,18 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/config";
 import { prisma } from "@/lib/prisma";
+import { z } from "zod";
+
+const patchSchema = z.object({
+  status: z.enum(["DRAFT", "ACTIVE", "PAUSED", "COMPLETED", "FAILED", "ARCHIVED"]).optional(),
+  name: z.string().min(1).max(100).optional(),
+  description: z.string().optional(),
+  conditions: z.array(z.any()).optional(),
+  actions: z.array(z.any()).optional(),
+  safeAddress: z.string().optional(),
+  safeNetwork: z.string().optional(),
+  maxExecutions: z.number().optional(),
+});
 
 // GET /api/workflows/:id - Get workflow details
 export async function GET(
@@ -57,6 +69,7 @@ export async function PATCH(
     const { id } = await params;
     const userId = (session.user as any).id;
     const body = await req.json();
+    const validatedData = patchSchema.parse(body);
 
     // Verify ownership
     const existing = await prisma.workflow.findFirst({
@@ -67,22 +80,21 @@ export async function PATCH(
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
 
-    // Update workflow
     const workflow = await prisma.workflow.update({
       where: { id },
       data: {
-        ...body,
+        ...validatedData,
         updatedAt: new Date(),
       },
     });
 
     return NextResponse.json({ workflow });
   } catch (error) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json({ error: "Invalid input", details: error.errors }, { status: 400 });
+    }
     console.error("Error updating workflow:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
 
